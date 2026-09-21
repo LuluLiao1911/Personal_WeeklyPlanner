@@ -23,6 +23,11 @@ The scheduling algorithm runs as JavaScript inside the published page (see `sche
 **publish or update this file as an Artifact**, and to modify the JS/HTML when the user wants
 the tool itself changed (new field, different rule, different look).
 
+`app.en.html` is an English-UI twin of `app.html`, published as its own separate Artifact
+with its own database (not a language toggle on a shared instance — the two never share
+runtime state). Any change to `schedule()` or the data model needs to be made in both files
+to keep them behaviorally identical; only the user-facing text differs between them.
+
 ## What it decides vs. what the user decides
 
 The scheduler places things on the calendar: it sequences tasks against fixed events, splits

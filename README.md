@@ -5,11 +5,17 @@ a form, and get a Monday–Sunday schedule that protects exercise, reading, soci
 real free blocks instead of letting "the things that absolutely must get done" quietly eat
 the whole week.
 
-**Live app:** https://claude.ai/artifact/9KtMmdz6JLccGjGs4GrJFE
+**Live app (Chinese UI):** https://claude.ai/artifact/9KtMmdz6JLccGjGs4GrJFE
+**Live app (English UI):** https://claude.ai/artifact/XRLUni3kdae8BHirFj62vs
+
+Both are the same app and the same `schedule()` logic — only the interface text differs.
+They're two separate artifacts with two separate databases (separate data, separate example
+seed), not a language toggle on one shared instance.
 
 ## How it works
 
-`app.html` is a single-page app with two tabs, published as a Claude Artifact:
+`app.html` (Chinese UI) / `app.en.html` (English UI) is a single-page app with two tabs,
+published as a Claude Artifact:
 
 1. **Input tab** — add/edit/delete fixed events, tasks, and preferences through
    forms. No files to edit by hand.
@@ -40,7 +46,8 @@ protected block — it surfaces a shortfall in the summary callout instead.
 ## Repo layout
 
 ```
-app.html                                the whole app (single file, published as the Artifact above)
+app.html                                the app, Chinese UI (published as the Artifact above)
+app.en.html                             the same app, English UI (separate Artifact + database)
 .claude/skills/weekly-plan/
   SKILL.md                              what the skill does and its rules
   references/algorithm.md               the placement algorithm as actually implemented
@@ -66,6 +73,8 @@ error, never a partial load. Full field reference:
 
 ## Making changes
 
-Edit `app.html` directly (the scheduling logic is in the `schedule()` function; the input
-forms and their fields are plain HTML above it) and ask Claude to republish it to the same
-Artifact URL so your existing data and the link both keep working.
+Edit `app.html` (or `app.en.html`) directly (the scheduling logic is in the `schedule()`
+function; the input forms and their fields are plain HTML above it) and ask Claude to
+republish it to the same Artifact URL so your existing data and the link both keep working.
+A change to the scheduling logic itself needs to be made in **both** files to stay in sync —
+they don't share code at runtime, only by construction.
