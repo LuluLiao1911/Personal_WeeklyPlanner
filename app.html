@@ -1,0 +1,1294 @@
+<title>週間手帳</title>
+<style>
+  :root{
+    --bg:#EFEAD9;
+    --paper:#FBF8F0;
+    --paper-soft:#F3EEDD;
+    --ink:#3B3A32;
+    --ink-soft:#8B8874;
+    --line:#E4DFCB;
+    --sage:#7C9070;
+    --sage-dark:#5F7355;
+    --sage-fg:#FFFFFF;
+    --rose:#C2726B;
+    --rose-fg:#FFFFFF;
+    --mustard:#D9A441;
+    --mustard-fg:#3B2B08;
+    --blue:#6C87A0;
+    --blue-fg:#FFFFFF;
+    --free-line:#C9C2A8;
+    --free-fg:#9B9678;
+    --good:#5F7355;
+    --good-bg:#E7EEDF;
+    --warn:#B5583F;
+    --warn-bg:#F6E3DC;
+    --danger:#B5583F;
+    --shadow: 0 1px 2px rgba(59,58,50,.08), 0 10px 24px -16px rgba(59,58,50,.35);
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --bg:#20211B;
+      --paper:#282920;
+      --paper-soft:#303226;
+      --ink:#EDE9DC;
+      --ink-soft:#A6A288;
+      --line:#3C3E30;
+      --sage:#96AC89;
+      --sage-dark:#B4C6A8;
+      --sage-fg:#15180F;
+      --rose:#E0958E;
+      --rose-fg:#2B1210;
+      --mustard:#E8BE71;
+      --mustard-fg:#2E2007;
+      --blue:#96B4CC;
+      --blue-fg:#101B24;
+      --free-line:#545745;
+      --free-fg:#8B8874;
+      --good:#96AC89;
+      --good-bg:#232C1E;
+      --warn:#E0958E;
+      --warn-bg:#2E1E19;
+      --danger:#E0958E;
+      --shadow: 0 1px 2px rgba(0,0,0,.4), 0 12px 26px -16px rgba(0,0,0,.65);
+    }
+  }
+  :root[data-theme="dark"]{
+    --bg:#20211B; --paper:#282920; --paper-soft:#303226; --ink:#EDE9DC; --ink-soft:#A6A288;
+    --line:#3C3E30; --sage:#96AC89; --sage-dark:#B4C6A8; --sage-fg:#15180F;
+    --rose:#E0958E; --rose-fg:#2B1210; --mustard:#E8BE71; --mustard-fg:#2E2007;
+    --blue:#96B4CC; --blue-fg:#101B24; --free-line:#545745; --free-fg:#8B8874;
+    --good:#96AC89; --good-bg:#232C1E; --warn:#E0958E; --warn-bg:#2E1E19; --danger:#E0958E;
+    --shadow: 0 1px 2px rgba(0,0,0,.4), 0 12px 26px -16px rgba(0,0,0,.65);
+  }
+
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);font-family:"Noto Sans TC","PingFang TC","Microsoft JhengHei",system-ui,sans-serif;}
+  .page{max-width:1000px;margin:0 auto;padding:24px 16px 64px;display:flex;flex-direction:column;gap:18px;}
+
+  header.top{position:relative;padding:18px 20px 16px;background:var(--paper);border:1px solid var(--line);border-radius:18px;box-shadow:var(--shadow);overflow:hidden;}
+  header.top::before{content:"";position:absolute;left:-18px;top:-18px;width:110px;height:110px;background:var(--sage);opacity:.12;border-radius:50%;pointer-events:none;}
+  header.top::after{content:"";position:absolute;right:-24px;bottom:-26px;width:140px;height:140px;background:var(--mustard);opacity:.10;border-radius:50%;pointer-events:none;}
+  .sprig{position:absolute;top:10px;right:16px;width:46px;height:46px;opacity:.55;pointer-events:none;}
+  .top-inner{position:relative;display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:14px;}
+  h1{font-family:"Caveat",cursive;font-weight:700;font-size:clamp(30px,6vw,42px);margin:0;color:var(--sage-dark);letter-spacing:.01em;}
+  .subtitle{margin:2px 0 0;font-size:12.5px;color:var(--ink-soft);}
+  .tabs{display:flex;gap:8px;}
+  .tab-btn{
+    font-family:inherit;font-size:13.5px;font-weight:600;padding:9px 16px;border-radius:999px;
+    border:1.5px solid var(--sage);background:transparent;color:var(--sage-dark);cursor:pointer;
+  }
+  .tab-btn[aria-selected="true"]{background:var(--sage);color:var(--sage-fg);}
+
+  section[hidden]{display:none!important}
+
+  /* ---------- shared card ---------- */
+  .card{background:var(--paper);border:1px solid var(--line);border-radius:16px;padding:18px 18px 16px;box-shadow:var(--shadow);}
+  .card h2{font-family:"Caveat",cursive;font-size:23px;font-weight:700;margin:0 0 2px;color:var(--sage-dark);}
+  .card .hint{font-size:12px;color:var(--ink-soft);margin:0 0 12px;}
+
+  /* ---------- input tab ---------- */
+  .input-grid{display:flex;flex-direction:column;gap:16px;}
+  .row-list{list-style:none;margin:0 0 12px;padding:0;display:flex;flex-direction:column;gap:8px;}
+  .row-item{
+    display:flex;align-items:center;gap:10px;padding:9px 12px;border:1px solid var(--line);
+    border-radius:12px;background:var(--paper-soft);
+  }
+  .row-item .dot{width:9px;height:9px;border-radius:3px;flex:none}
+  .row-item .info{flex:1;min-width:0}
+  .row-item .info .name{font-size:13.5px;font-weight:600;display:block}
+  .row-item .info .meta{font-size:11.5px;color:var(--ink-soft);margin-top:2px}
+  .row-item .actions{display:flex;gap:6px;flex:none}
+  .icon-btn{
+    border:1px solid var(--line);background:var(--paper);color:var(--ink-soft);border-radius:8px;
+    width:28px;height:28px;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:13px;
+  }
+  .icon-btn:hover{color:var(--ink)}
+  .empty-note{font-size:12.5px;color:var(--ink-soft);padding:10px 2px;}
+
+  form.entry-form{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px 12px;padding:14px;border:1.5px dashed var(--free-line);border-radius:12px;background:var(--paper-soft);}
+  form.entry-form .field{display:flex;flex-direction:column;gap:4px;min-width:0}
+  form.entry-form .field.wide{grid-column:1/-1}
+  form.entry-form label{font-size:11px;color:var(--ink-soft);font-weight:600;}
+  form.entry-form input[type="text"],form.entry-form input[type="number"],form.entry-form input[type="time"],
+  form.entry-form input[type="date"],form.entry-form input[type="datetime-local"],form.entry-form select,form.entry-form textarea{
+    font-family:inherit;font-size:13px;padding:7px 9px;border:1px solid var(--line);border-radius:8px;
+    background:var(--paper);color:var(--ink);width:100%;
+  }
+  form.entry-form textarea{resize:vertical;min-height:36px}
+  .daypicker{display:flex;gap:4px;flex-wrap:wrap}
+  .daypicker label{
+    display:flex;align-items:center;justify-content:center;width:30px;height:30px;border-radius:8px;
+    border:1px solid var(--line);background:var(--paper);font-size:12px;font-weight:600;cursor:pointer;color:var(--ink-soft);
+  }
+  .daypicker input{display:none}
+  .daypicker input:checked + span{color:inherit}
+  .daypicker label:has(input:checked){background:var(--sage);border-color:var(--sage);color:var(--sage-fg)}
+  .checkline{display:flex;align-items:center;gap:6px;font-size:12.5px;color:var(--ink)}
+  .checkline input{width:16px;height:16px}
+  .form-actions{grid-column:1/-1;display:flex;gap:8px;justify-content:flex-end;margin-top:2px}
+  .btn{font-family:inherit;font-size:13px;font-weight:600;padding:8px 16px;border-radius:9px;border:1px solid var(--line);background:var(--paper);color:var(--ink);cursor:pointer;}
+  .btn.primary{background:var(--sage);border-color:var(--sage);color:var(--sage-fg)}
+  .btn.ghost{background:transparent;border-color:transparent;color:var(--ink-soft)}
+  .add-toggle{
+    display:inline-flex;align-items:center;gap:6px;font-size:12.5px;font-weight:600;color:var(--sage-dark);
+    background:transparent;border:none;cursor:pointer;padding:4px 0;
+  }
+
+  .prefs-sub{margin-top:14px;padding-top:14px;border-top:1px solid var(--line);}
+  .prefs-sub:first-child{margin-top:0;padding-top:0;border-top:none}
+  .prefs-sub h3{font-size:13.5px;margin:0 0 8px;color:var(--ink)}
+  .daytime-inline{display:flex;gap:12px;flex-wrap:wrap;align-items:flex-end;margin-bottom:12px}
+  .daytime-inline .field{display:flex;flex-direction:column;gap:4px}
+  .daytime-inline label{font-size:11px;color:var(--ink-soft);font-weight:600}
+  .daytime-inline input{font-family:inherit;font-size:13px;padding:7px 9px;border:1px solid var(--line);border-radius:8px;background:var(--paper);color:var(--ink)}
+
+  .priority-list{list-style:none;margin:0 0 10px;padding:0;display:flex;flex-direction:column;gap:6px}
+  .priority-list li{display:flex;align-items:center;gap:8px;padding:7px 10px;border:1px solid var(--line);border-radius:9px;background:var(--paper-soft);font-size:12.5px}
+  .priority-list li .num{width:18px;height:18px;border-radius:5px;background:var(--warn-bg);color:var(--warn);font-size:10.5px;font-weight:700;display:flex;align-items:center;justify-content:center;flex:none}
+  .priority-list li .txt{flex:1}
+  .priority-list li .mini{display:flex;gap:4px}
+  .priority-list li .mini button{width:22px;height:22px;font-size:11px;border-radius:6px;border:1px solid var(--line);background:var(--paper);cursor:pointer}
+
+  /* ---------- output tab ---------- */
+  .week-nav{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap}
+  .week-nav .range{font-family:"Caveat",cursive;font-size:20px;color:var(--ink-soft)}
+  .week-nav .navbtns{display:flex;gap:8px}
+  .legend{display:flex;flex-wrap:wrap;gap:10px 16px;margin-top:10px}
+  .legend-item{display:flex;align-items:center;gap:6px;font-size:11.5px;color:var(--ink-soft)}
+  .swatch{width:13px;height:13px;border-radius:4px;flex:none}
+  .swatch.fixed{background:var(--sage)}
+  .swatch.must{background:var(--rose)}
+  .swatch.want{background:var(--mustard)}
+  .swatch.optional{background:var(--mustard);opacity:.55}
+  .swatch.free{background:transparent;border:1.5px dashed var(--free-line)}
+
+  .summary{border-radius:12px;padding:12px 16px;font-size:13.5px;font-weight:500;display:flex;gap:8px;}
+  .summary.ok{background:var(--good-bg);color:var(--good);border:1px solid var(--good)}
+  .summary.warn{background:var(--warn-bg);color:var(--warn);border:1px solid var(--warn);flex-direction:column;gap:4px}
+  .summary.warn ul{margin:2px 0 0;padding-left:18px}
+
+  .calendar{display:flex;gap:6px;margin-top:14px;align-items:flex-start;overflow-x:auto;padding-bottom:4px;}
+  .axis{width:38px;position:relative;height:600px;flex:none;padding-top:38px;}
+  .axis .tick{position:absolute;right:2px;transform:translateY(-50%);font-size:10px;color:var(--ink-soft);font-variant-numeric:tabular-nums;}
+  .day-col{flex:1;min-width:104px;display:flex;flex-direction:column;}
+  .day-head{
+    background:var(--sage);color:var(--sage-fg);text-align:center;padding:6px 4px;border-radius:10px 10px 0 0;
+  }
+  .day-head .dow{font-family:"Caveat",cursive;font-size:17px;font-weight:700;display:block;line-height:1.1}
+  .day-head .date{font-size:10px;opacity:.9}
+  .day-col.today .day-head{background:var(--rose)}
+  .day-body{position:relative;height:600px;background:var(--paper);border:1px solid var(--line);border-top:none;overflow:hidden;}
+  .block{
+    position:absolute;left:3px;right:3px;border-radius:6px;font-size:10px;line-height:1.15;
+    padding:2px 4px;overflow:hidden;color:#fff;cursor:default;
+  }
+  .block.fixed{background:var(--sage)}
+  .block.must{background:var(--rose)}
+  .block.want{background:var(--mustard);color:var(--mustard-fg)}
+  .block.optional{background:var(--mustard);color:var(--mustard-fg);opacity:.55}
+  .block.free-protected{background:transparent;border:1.5px dashed var(--free-line);color:var(--free-fg)}
+  .block.done{opacity:.35;text-decoration:line-through}
+  .block .lbl{display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+
+  .master{margin-top:16px}
+  #task-list{list-style:none;margin:0;padding:0;display:flex;flex-direction:column}
+  .task-row{display:flex;align-items:center;gap:12px;padding:10px 0;border-top:1px solid var(--line)}
+  .task-row:first-child{border-top:none}
+  .check{width:22px;height:22px;border-radius:7px;border:2px solid var(--line);background:var(--paper-soft);flex:none;cursor:pointer;display:flex;align-items:center;justify-content:center;color:var(--good);font-size:14px;padding:0}
+  .check[aria-checked="true"]{background:var(--good-bg);border-color:var(--good)}
+  .task-body{flex:1;min-width:0}
+  .task-name{font-size:14px;font-weight:600;display:block}
+  .task-row.completed .task-name{color:var(--ink-soft);text-decoration:line-through}
+  .task-meta{display:flex;flex-wrap:wrap;gap:8px;margin-top:3px;font-size:11.5px;color:var(--ink-soft);font-variant-numeric:tabular-nums}
+  .pill{display:inline-flex;align-items:center;gap:4px;padding:2px 8px;border-radius:999px;font-size:10.5px;font-weight:700}
+  .pill.must{background:var(--rose);color:var(--rose-fg)}
+  .pill.want{background:var(--mustard);color:var(--mustard-fg)}
+  .pill.optional{background:var(--paper-soft);color:var(--ink-soft);border:1px solid var(--line)}
+  .pill.overdue{background:var(--warn-bg);color:var(--warn);border:1px solid var(--warn)}
+
+  .freetime-row{display:flex;align-items:center;gap:12px;padding:10px 0;border-top:1px solid var(--line)}
+  .freetime-row:first-child{border-top:none}
+  .freetime-row .when{width:150px;flex:none;font-size:13px;font-weight:600}
+  .freetime-row .dur{font-size:11.5px;color:var(--ink-soft);width:64px;flex:none;font-variant-numeric:tabular-nums}
+  .freetime-row .ideas{font-size:12.5px;color:var(--ink-soft);flex:1}
+
+  .reflect-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px}
+  .reflect-field{display:flex;flex-direction:column;gap:4px}
+  .reflect-field.wide{grid-column:1/-1}
+  .reflect-field label{font-size:11.5px;font-weight:600;color:var(--ink-soft)}
+  .reflect-field textarea{
+    font-family:inherit;font-size:13px;padding:9px 10px;border:1px solid var(--line);border-radius:10px;
+    background:var(--paper-soft);color:var(--ink);min-height:64px;resize:vertical;
+  }
+
+  footer.note{font-size:11px;color:var(--ink-soft);text-align:center;padding-top:4px}
+
+  @media (max-width:620px){
+    .calendar{gap:3px}
+    .day-col{min-width:76px}
+    .axis{width:30px}
+  }
+</style>
+
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;600;700&family=Caveat:wght@600;700&display=swap">
+
+<div class="page">
+  <header class="top">
+    <svg class="sprig" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M32 60C30 40 30 20 34 4" stroke="var(--sage-dark)" stroke-width="2" stroke-linecap="round"/>
+      <ellipse cx="24" cy="22" rx="9" ry="5" transform="rotate(-35 24 22)" fill="var(--sage)"/>
+      <ellipse cx="40" cy="14" rx="9" ry="5" transform="rotate(30 40 14)" fill="var(--sage)"/>
+      <ellipse cx="22" cy="40" rx="8" ry="4.5" transform="rotate(-30 22 40)" fill="var(--sage)" opacity=".8"/>
+      <ellipse cx="42" cy="34" rx="8" ry="4.5" transform="rotate(28 42 34)" fill="var(--sage)" opacity=".8"/>
+    </svg>
+    <div class="top-inner">
+      <div>
+        <h1>週間手帳</h1>
+        <p class="subtitle">固定行程・任務・偏好都在這裡輸入，週計畫自動排好</p>
+      </div>
+      <div class="tabs" role="tablist">
+        <button class="tab-btn" id="tab-btn-input" role="tab" aria-selected="true" aria-controls="tab-input">輸入資料</button>
+        <button class="tab-btn" id="tab-btn-output" role="tab" aria-selected="false" aria-controls="tab-output">本週計畫</button>
+      </div>
+    </div>
+  </header>
+
+  <!-- ============ INPUT TAB ============ -->
+  <section id="tab-input" class="input-grid">
+
+    <div class="card">
+      <h2>固定行程</h2>
+      <p class="hint">上課、上班、通勤、會議這類不會動的時段。</p>
+      <ul class="row-list" id="fixed-list"></ul>
+      <button class="add-toggle" data-toggle="fixed-form">＋ 新增固定行程</button>
+      <form class="entry-form" id="fixed-form" hidden>
+        <input type="hidden" id="fixed-edit-id" value="">
+        <div class="field wide">
+          <label for="fixed-name">名稱</label>
+          <input type="text" id="fixed-name" required placeholder="例如：課程 A">
+        </div>
+        <div class="field wide">
+          <label>星期</label>
+          <div class="daypicker" id="fixed-days">
+            <label><input type="checkbox" value="mon"><span>一</span></label>
+            <label><input type="checkbox" value="tue"><span>二</span></label>
+            <label><input type="checkbox" value="wed"><span>三</span></label>
+            <label><input type="checkbox" value="thu"><span>四</span></label>
+            <label><input type="checkbox" value="fri"><span>五</span></label>
+            <label><input type="checkbox" value="sat"><span>六</span></label>
+            <label><input type="checkbox" value="sun"><span>日</span></label>
+          </div>
+        </div>
+        <div class="field"><label for="fixed-start">開始時間</label><input type="time" id="fixed-start" required></div>
+        <div class="field"><label for="fixed-end">結束時間</label><input type="time" id="fixed-end" required></div>
+        <div class="field"><label for="fixed-location">地點</label><input type="text" id="fixed-location" placeholder="教室 301"></div>
+        <div class="field"><label for="fixed-people">相關的人</label><input type="text" id="fixed-people" placeholder="主管、team"></div>
+        <div class="form-actions">
+          <button type="button" class="btn ghost" data-cancel="fixed-form">取消</button>
+          <button type="submit" class="btn primary" id="fixed-submit">新增</button>
+        </div>
+      </form>
+    </div>
+
+    <div class="card">
+      <h2>任務</h2>
+      <p class="hint">Must / Want / Optional 由你自己判斷 — 這是你的優先順序,不是系統幫你決定的。</p>
+      <ul class="row-list" id="task-input-list"></ul>
+      <button class="add-toggle" data-toggle="task-form">＋ 新增任務</button>
+      <form class="entry-form" id="task-form" hidden>
+        <input type="hidden" id="task-edit-id" value="">
+        <div class="field wide">
+          <label for="task-name">任務名稱</label>
+          <input type="text" id="task-name" required placeholder="例如：期末報告草稿">
+        </div>
+        <div class="field">
+          <label for="task-category">分類</label>
+          <select id="task-category">
+            <option value="must">Must（一定要完成）</option>
+            <option value="want">Want（想固定維持）</option>
+            <option value="optional">Optional（有空再做）</option>
+          </select>
+        </div>
+        <div class="field"><label for="task-deadline">截止時間（可留空）</label><input type="datetime-local" id="task-deadline"></div>
+        <div class="field"><label for="task-minutes">單次預估時間（分鐘）</label><input type="number" id="task-minutes" min="5" step="5" required placeholder="240"></div>
+        <div class="field"><label for="task-repeat">每週次數</label><input type="number" id="task-repeat" min="1" step="1" value="1"></div>
+        <div class="field">
+          <label for="task-pref">時段偏好</label>
+          <select id="task-pref">
+            <option value="any">不限</option>
+            <option value="morning">早上</option>
+            <option value="afternoon">下午</option>
+            <option value="evening">晚上</option>
+          </select>
+        </div>
+        <div class="field">
+          <label for="task-day">指定星期（可留空）</label>
+          <select id="task-day">
+            <option value="">不限</option>
+            <option value="mon">一</option>
+            <option value="tue">二</option>
+            <option value="wed">三</option>
+            <option value="thu">四</option>
+            <option value="fri">五</option>
+            <option value="sat">六</option>
+            <option value="sun">日</option>
+          </select>
+        </div>
+        <div class="field"><label for="task-minblock">最小可用時段（分鐘）</label><input type="number" id="task-minblock" min="5" step="5" placeholder="45"></div>
+        <div class="field wide"><label for="task-location">地點需求（逗號分隔，或填 anywhere）</label><input type="text" id="task-location" placeholder="家裡, 圖書館"></div>
+        <div class="field wide">
+          <label class="checkline"><input type="checkbox" id="task-splittable" checked> 可以拆成多段完成</label>
+        </div>
+        <div class="field wide"><label for="task-notes">備註</label><textarea id="task-notes" placeholder="其他補充"></textarea></div>
+        <div class="form-actions">
+          <button type="button" class="btn ghost" data-cancel="task-form">取消</button>
+          <button type="submit" class="btn primary" id="task-submit">新增</button>
+        </div>
+      </form>
+    </div>
+
+    <div class="card">
+      <h2>偏好設定</h2>
+      <p class="hint">這些是你自己的決定 — AI 只會照著排，不會自己決定要保留哪些時段或犧牲什麼。</p>
+
+      <div class="prefs-sub">
+        <h3>每天可排程的時間範圍</h3>
+        <div class="daytime-inline">
+          <div class="field"><label for="pref-daystart">開始</label><input type="time" id="pref-daystart" value="07:30"></div>
+          <div class="field"><label for="pref-dayend">結束</label><input type="time" id="pref-dayend" value="23:30"></div>
+          <button class="btn primary" id="pref-daytime-save" type="button">儲存</button>
+        </div>
+      </div>
+
+      <div class="prefs-sub">
+        <h3>保護時段（無論如何都保留）</h3>
+        <ul class="row-list" id="protected-list"></ul>
+        <button class="add-toggle" data-toggle="protected-form">＋ 新增保護時段</button>
+        <form class="entry-form" id="protected-form" hidden>
+          <input type="hidden" id="protected-edit-id" value="">
+          <div class="field wide"><label for="protected-label">名稱</label><input type="text" id="protected-label" required placeholder="週五晚上放空"></div>
+          <div class="field wide">
+            <label>星期</label>
+            <div class="daypicker" id="protected-days">
+              <label><input type="checkbox" value="mon"><span>一</span></label>
+              <label><input type="checkbox" value="tue"><span>二</span></label>
+              <label><input type="checkbox" value="wed"><span>三</span></label>
+              <label><input type="checkbox" value="thu"><span>四</span></label>
+              <label><input type="checkbox" value="fri"><span>五</span></label>
+              <label><input type="checkbox" value="sat"><span>六</span></label>
+              <label><input type="checkbox" value="sun"><span>日</span></label>
+            </div>
+          </div>
+          <div class="field"><label for="protected-start">開始</label><input type="time" id="protected-start" required></div>
+          <div class="field"><label for="protected-end">結束</label><input type="time" id="protected-end" required></div>
+          <div class="form-actions">
+            <button type="button" class="btn ghost" data-cancel="protected-form">取消</button>
+            <button type="submit" class="btn primary" id="protected-submit">新增</button>
+          </div>
+        </form>
+      </div>
+
+      <div class="prefs-sub">
+        <p class="hint" style="margin:0">想固定維持的活動（運動、閱讀…）直接在左邊「任務」新增，分類選 Want、截止時間留空、填「每週次數」即可 — 不用在這裡重複設定。</p>
+      </div>
+
+      <div class="prefs-sub">
+        <h3>時間不夠時,犧牲順序（由上而下先犧牲）</h3>
+        <p class="hint" style="margin-bottom:8px">must 任務與保護時段永遠不在這個清單裡。</p>
+        <ul class="priority-list" id="priority-list"></ul>
+        <div style="display:flex;gap:8px">
+          <input type="text" id="priority-new" placeholder="輸入項目,例如：閱讀" style="flex:1;font-family:inherit;font-size:13px;padding:7px 9px;border:1px solid var(--line);border-radius:8px;background:var(--paper);color:var(--ink)">
+          <button class="btn primary" id="priority-add" type="button">新增</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ OUTPUT TAB ============ -->
+  <section id="tab-output" hidden>
+    <div class="card" id="pdf-page1">
+      <div class="week-nav">
+        <div>
+          <span class="range" id="week-range">–</span>
+        </div>
+        <div class="navbtns" data-nopdf="1">
+          <button class="btn" id="week-prev">◀ 上週</button>
+          <button class="btn" id="week-this">本週</button>
+          <button class="btn" id="week-next">下週 ▶</button>
+          <button class="btn primary" id="pdf-download">⬇ 下載本週 PDF</button>
+        </div>
+      </div>
+      <div class="legend">
+        <span class="legend-item"><span class="swatch fixed"></span>固定行程</span>
+        <span class="legend-item"><span class="swatch must"></span>! Must</span>
+        <span class="legend-item"><span class="swatch want"></span>♥ Want</span>
+        <span class="legend-item"><span class="swatch optional"></span>· Optional</span>
+        <span class="legend-item"><span class="swatch free"></span>保護 / 自由時段</span>
+      </div>
+
+      <div class="summary ok" id="summary" style="margin-top:14px">🎉 沒有排不進去的事項。</div>
+
+      <div class="calendar" id="calendar"></div>
+    </div>
+
+    <div id="pdf-page2">
+      <div class="card master">
+        <h2>任務總表</h2>
+        <p class="hint">依截止日期排序，勾選代表完成 — 完成的任務不會再被排入行事曆。</p>
+        <ul id="task-list"></ul>
+      </div>
+
+      <div class="card master" style="margin-top:16px">
+        <h2>自由時段建議</h2>
+        <p class="hint">這些時段沒有被排入任何事項 — 只是建議，真正要不要用來做什麼由你決定。</p>
+        <ul id="freetime-list"></ul>
+      </div>
+
+      <div class="card master" style="margin-top:16px">
+        <h2>本週回顧</h2>
+        <p class="hint">隨時記幾句都可以，會自動保存。</p>
+        <div class="reflect-grid">
+          <div class="reflect-field"><label for="reflect-wins">這週做到的事</label><textarea id="reflect-wins" data-key="wins" placeholder="這週的收穫、完成的事…"></textarea></div>
+          <div class="reflect-field"><label for="reflect-unfinished">沒完成的事</label><textarea id="reflect-unfinished" data-key="unfinished" placeholder="還留著的、往後延的…"></textarea></div>
+          <div class="reflect-field"><label for="reflect-longer">花的時間比預期久</label><textarea id="reflect-longer" data-key="longer" placeholder="低估時間的地方…"></textarea></div>
+          <div class="reflect-field"><label for="reflect-change">下週想調整</label><textarea id="reflect-change" data-key="change" placeholder="下週想試試看的調整…"></textarea></div>
+          <div class="reflect-field wide"><label for="reflect-notes">其他筆記</label><textarea id="reflect-notes" data-key="notes" placeholder="任何補充"></textarea></div>
+        </div>
+      </div>
+    </div>
+
+    <footer class="note">由 weekly-plan 排程引擎於瀏覽器端即時計算，任何資料變動都會自動重排。</footer>
+  </section>
+</div>
+
+<script>
+(function(){
+  "use strict";
+
+  /* ---------------- constants ---------------- */
+  var DAY_KEYS = ["mon","tue","wed","thu","fri","sat","sun"];
+  var DAY_LABEL = {mon:"一",tue:"二",wed:"三",thu:"四",fri:"五",sat:"六",sun:"日"};
+  var CATEGORY_ORDER = {must:0, want:1, optional:2};
+  var CATEGORY_LABEL = {must:"! Must", want:"♥ Want", optional:"· Optional"};
+
+  function esc(s){
+    return String(s==null?"":s).replace(/[&<>"']/g, function(c){
+      return {"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[c];
+    });
+  }
+  function toMinutes(hhmm){
+    if(!hhmm) return null;
+    var p = hhmm.split(":"); return (+p[0])*60 + (+p[1]);
+  }
+  function fmtMin(m){
+    var h = Math.floor(m/60), mm = m%60;
+    return (h<10?"0":"")+h+":"+(mm<10?"0":"")+mm;
+  }
+  function fmtDateShort(d){ return (d.getMonth()+1)+"/"+d.getDate(); }
+  function dateOnly(d){ var n=new Date(d); n.setHours(0,0,0,0); return n; }
+  function sameDate(a,b){ return dateOnly(a).getTime()===dateOnly(b).getTime(); }
+
+  function getWeekDates(base, offsetWeeks){
+    var d = new Date(base);
+    var dow = (d.getDay()+6)%7; // 0=mon
+    var monday = new Date(d);
+    monday.setDate(d.getDate()-dow+ (offsetWeeks||0)*7);
+    monday.setHours(0,0,0,0);
+    var out = [];
+    for(var i=0;i<7;i++){
+      var nd = new Date(monday); nd.setDate(monday.getDate()+i);
+      out.push(nd);
+    }
+    return out;
+  }
+
+  function parseDeadline(str){
+    if(!str) return null;
+    // datetime-local "2026-09-26T23:59" or plain date "2026-09-26"
+    var d = new Date(str.length<=10 ? str+"T23:59:59" : str);
+    return isNaN(d.getTime()) ? null : d;
+  }
+
+  /* ---------------- gap helpers ---------------- */
+  function subtractRange(gaps, s, e){
+    var out = [];
+    gaps.forEach(function(g){
+      if(e<=g.start || s>=g.end){ out.push(g); return; }
+      if(s>g.start) out.push({start:g.start, end:s});
+      if(e<g.end) out.push({start:e, end:g.end});
+    });
+    return out;
+  }
+  function prefWindow(pref, dayStart, dayEnd){
+    var windows = {
+      morning:[dayStart, Math.min(toMinutes("12:00"), dayEnd)],
+      afternoon:[Math.max(toMinutes("12:00"), dayStart), Math.min(toMinutes("18:00"), dayEnd)],
+      evening:[Math.max(toMinutes("18:00"), dayStart), dayEnd]
+    };
+    return windows[pref] || null;
+  }
+  function overlapsPref(g, pref, dayStart, dayEnd){
+    if(pref==="any"||!pref) return true;
+    var w = prefWindow(pref, dayStart, dayEnd); if(!w) return true;
+    return g.start < w[1] && g.end > w[0];
+  }
+  // Where inside gap g a `remaining`-minute block should start to land as close
+  // to the preferred window as possible (never outside g).
+  function prefStartWithin(g, pref, dayStart, dayEnd, remaining){
+    var w = prefWindow(pref, dayStart, dayEnd);
+    if(!w) return g.start;
+    var start = Math.max(g.start, w[0]);
+    if(start + remaining > g.end) start = g.end - remaining;
+    if(start < g.start) start = g.start;
+    return start;
+  }
+
+  /* ---------------- scheduler ---------------- */
+  function schedule(weekDates, prefs, fixedEvents, tasks){
+    var dayStart = toMinutes(prefs.dayStart || "07:30");
+    var dayEnd = toMinutes(prefs.dayEnd || "23:30");
+
+    var days = weekDates.map(function(date, i){
+      return {date:date, key:DAY_KEYS[i], gaps:[{start:dayStart,end:dayEnd}], blocks:[]};
+    });
+
+    function place(day, type, label, s, e, detail, taskId){
+      day.blocks.push({type:type, label:label, start:s, end:e, detail:detail, taskId:taskId||null});
+      day.gaps = subtractRange(day.gaps, s, e);
+    }
+
+    fixedEvents.forEach(function(ev){
+      var s = toMinutes(ev.start), e = toMinutes(ev.end);
+      if(s==null||e==null||e<=s) return;
+      days.forEach(function(day){
+        if((ev.days||[]).indexOf(day.key)===-1) return;
+        place(day, "fixed", ev.name, s, e, ev.name+"（"+fmtMin(s)+"–"+fmtMin(e)+(ev.location?" · "+ev.location:"")+"）");
+      });
+    });
+
+    (prefs.protectedBlocks||[]).forEach(function(pb){
+      var s = toMinutes(pb.start), e = toMinutes(pb.end);
+      if(s==null||e==null||e<=s) return;
+      days.forEach(function(day){
+        if((pb.days||[]).indexOf(day.key)===-1) return;
+        place(day, "free-protected", pb.label, s, e, "保留："+pb.label);
+      });
+    });
+
+    function clippedGaps(day, deadline){
+      if(!deadline) return day.gaps;
+      var dDate = dateOnly(deadline).getTime();
+      var dayDate = dateOnly(day.date).getTime();
+      if(dayDate > dDate) return [];
+      if(dayDate < dDate) return day.gaps;
+      var cutoff = deadline.getHours()*60 + deadline.getMinutes();
+      return day.gaps.map(function(g){
+        if(g.start >= cutoff) return null;
+        return {start:g.start, end:Math.min(g.end, cutoff)};
+      }).filter(function(g){ return g && g.end > g.start; });
+    }
+
+    var shortfalls = [];
+
+    var activeTasks = tasks.filter(function(t){ return !t.completed; });
+    activeTasks.sort(function(a,b){
+      var ca = CATEGORY_ORDER[a.category]==null?3:CATEGORY_ORDER[a.category];
+      var cb = CATEGORY_ORDER[b.category]==null?3:CATEGORY_ORDER[b.category];
+      if(ca!==cb) return ca-cb;
+      var da = parseDeadline(a.deadline), db_ = parseDeadline(b.deadline);
+      if(da&&db_) return da-db_;
+      if(da) return -1; if(db_) return 1;
+      return 0;
+    });
+
+    activeTasks.forEach(function(task){
+      var sessionMinutes = +task.estimatedMinutes || 0;
+      if(sessionMinutes<=0) return;
+      var repeat = Math.max(1, +task.repeatPerWeek || 1);
+      var deadline = parseDeadline(task.deadline);
+      var minBlock = +task.minBlockMinutes || sessionMinutes;
+      var pref = task.timePreference || "any";
+      var fixedDay = task.preferredDay || null;
+      var placedSessions = 0;
+      var usedDaysForTask = {};
+
+      var baseEligible = days.filter(function(day){
+        if(fixedDay && day.key!==fixedDay) return false;
+        return !deadline || dateOnly(day.date) <= dateOnly(deadline);
+      });
+      if(baseEligible.length===0){
+        if(task.category==="must") shortfalls.push({kind:"task", name:task.name, minutes:sessionMinutes*repeat});
+        return;
+      }
+
+      for(var s=0; s<repeat; s++){
+        var remaining = sessionMinutes;
+        // prefer a day not yet used by this task, so repeats spread across the week
+        var passOrder = [
+          baseEligible.filter(function(d){ return !usedDaysForTask[d.key]; }),
+          baseEligible
+        ];
+        var placedWhole = false;
+
+        passOrder.forEach(function(eligibleDays){
+          if(placedWhole || eligibleDays.length===0) return;
+          [true,false].forEach(function(needPrefMatch){
+            if(placedWhole) return;
+            for(var i=0;i<eligibleDays.length && !placedWhole;i++){
+              var day = eligibleDays[i];
+              var gaps = clippedGaps(day, deadline).slice().sort(function(a,b){return a.start-b.start;});
+              for(var j=0;j<gaps.length;j++){
+                var g = gaps[j];
+                if((g.end-g.start) < remaining) continue;
+                if(needPrefMatch && !overlapsPref(g, pref, dayStart, dayEnd)) continue;
+                var placeAt = needPrefMatch ? prefStartWithin(g, pref, dayStart, dayEnd, remaining) : g.start;
+                place(day, task.category, task.name, placeAt, placeAt+remaining,
+                  task.name+"（"+fmtMin(placeAt)+"–"+fmtMin(placeAt+remaining)+"）", task.id);
+                remaining = 0; placedWhole = true; usedDaysForTask[day.key]=true;
+                break;
+              }
+            }
+          });
+        });
+
+        if(remaining>0 && task.splittable){
+          var guard = 0;
+          while(remaining>0 && guard<50){
+            guard++;
+            var best=null, bestDay=null;
+            baseEligible.forEach(function(day){
+              clippedGaps(day, deadline).forEach(function(g){
+                var len = g.end-g.start;
+                if(len<minBlock) return;
+                if(!best || len>(best.end-best.start)){ best=g; bestDay=day; }
+              });
+            });
+            if(!best) break;
+            var take = Math.min(remaining, best.end-best.start);
+            place(bestDay, task.category, task.name, best.start, best.start+take,
+              task.name+"（"+fmtMin(best.start)+"–"+fmtMin(best.start+take)+"）", task.id);
+            remaining -= take;
+            usedDaysForTask[bestDay.key]=true;
+          }
+        }
+
+        if(remaining>0){
+          if(task.category==="must") shortfalls.push({kind:"task", name:task.name, minutes:remaining});
+          else if(repeat>1) shortfalls.push({kind:"repeat", name:task.name, missing:repeat-placedSessions});
+          break; // stop trying further sessions once one fails to fit
+        }
+        placedSessions++;
+      }
+    });
+
+    return {days:days, shortfalls:shortfalls, dayStart:dayStart, dayEnd:dayEnd};
+  }
+
+  /* ---------------- state ---------------- */
+  var state = {
+    fixedEvents: [],
+    tasks: [],
+    prefs: {dayStart:"07:30", dayEnd:"23:30", protectedBlocks:[], sacrificePriority:[]},
+    weekOffset: 0
+  };
+  var db = null;
+  var unsub = [];
+
+  /* ---------------- tabs ---------------- */
+  var tabBtnInput = document.getElementById("tab-btn-input");
+  var tabBtnOutput = document.getElementById("tab-btn-output");
+  var tabInput = document.getElementById("tab-input");
+  var tabOutput = document.getElementById("tab-output");
+  function showTab(which){
+    var isInput = which==="input";
+    tabInput.hidden = !isInput; tabOutput.hidden = isInput;
+    tabBtnInput.setAttribute("aria-selected", String(isInput));
+    tabBtnOutput.setAttribute("aria-selected", String(!isInput));
+    if(!isInput) renderOutput();
+  }
+  tabBtnInput.addEventListener("click", function(){ showTab("input"); });
+  tabBtnOutput.addEventListener("click", function(){ showTab("output"); });
+
+  /* ---------------- generic add/cancel toggles ---------------- */
+  document.querySelectorAll("[data-toggle]").forEach(function(btn){
+    btn.addEventListener("click", function(){
+      var form = document.getElementById(btn.dataset.toggle);
+      form.hidden = !form.hidden;
+    });
+  });
+  document.querySelectorAll("[data-cancel]").forEach(function(btn){
+    btn.addEventListener("click", function(){
+      var form = document.getElementById(btn.dataset.cancel);
+      form.reset();
+      form.querySelectorAll(".daypicker input").forEach(function(c){c.checked=false;});
+      form.querySelector('input[type="hidden"]').value = "";
+      form.hidden = true;
+      var submitBtn = form.querySelector('button[type="submit"]');
+      if(submitBtn) submitBtn.textContent = "新增";
+    });
+  });
+
+  function getCheckedDays(container){
+    return Array.prototype.slice.call(container.querySelectorAll("input:checked")).map(function(i){return i.value;});
+  }
+  function setCheckedDays(container, days){
+    container.querySelectorAll("input").forEach(function(i){ i.checked = (days||[]).indexOf(i.value)!==-1; });
+  }
+
+  /* ================= FIXED EVENTS ================= */
+  var fixedListEl = document.getElementById("fixed-list");
+  function renderFixedList(){
+    fixedListEl.innerHTML = "";
+    if(state.fixedEvents.length===0){
+      fixedListEl.innerHTML = '<li class="empty-note">還沒有固定行程。</li>';
+      return;
+    }
+    state.fixedEvents.forEach(function(ev){
+      var li = document.createElement("li");
+      li.className = "row-item";
+      var days = (ev.days||[]).map(function(d){return DAY_LABEL[d];}).join("、");
+      li.innerHTML =
+        '<span class="dot" style="background:var(--sage)"></span>'+
+        '<div class="info"><span class="name">'+esc(ev.name)+'</span>'+
+        '<span class="meta">'+esc(days)+' · '+esc(ev.start)+'–'+esc(ev.end)+(ev.location?' · '+esc(ev.location):'')+'</span></div>'+
+        '<div class="actions">'+
+          '<button class="icon-btn" data-edit="'+ev.id+'" title="編輯">✎</button>'+
+          '<button class="icon-btn" data-del="'+ev.id+'" title="刪除">✕</button>'+
+        '</div>';
+      fixedListEl.appendChild(li);
+    });
+  }
+  fixedListEl.addEventListener("click", function(e){
+    var editBtn = e.target.closest("[data-edit]");
+    var delBtn = e.target.closest("[data-del]");
+    if(editBtn){
+      var ev = state.fixedEvents.find(function(x){return x.id===editBtn.dataset.edit;});
+      if(!ev) return;
+      document.getElementById("fixed-form").hidden = false;
+      document.getElementById("fixed-edit-id").value = ev.id;
+      document.getElementById("fixed-name").value = ev.name;
+      setCheckedDays(document.getElementById("fixed-days"), ev.days);
+      document.getElementById("fixed-start").value = ev.start;
+      document.getElementById("fixed-end").value = ev.end;
+      document.getElementById("fixed-location").value = ev.location||"";
+      document.getElementById("fixed-people").value = ev.people||"";
+      document.getElementById("fixed-submit").textContent = "更新";
+    } else if(delBtn){
+      if(!db) return;
+      db.doc("fixedEvents/"+delBtn.dataset.del).delete().catch(function(){});
+    }
+  });
+  document.getElementById("fixed-form").addEventListener("submit", function(e){
+    e.preventDefault();
+    var id = document.getElementById("fixed-edit-id").value;
+    var data = {
+      name: document.getElementById("fixed-name").value.trim(),
+      days: getCheckedDays(document.getElementById("fixed-days")),
+      start: document.getElementById("fixed-start").value,
+      end: document.getElementById("fixed-end").value,
+      location: document.getElementById("fixed-location").value.trim(),
+      people: document.getElementById("fixed-people").value.trim()
+    };
+    if(!data.name || data.days.length===0 || !data.start || !data.end) return;
+    if(!db) return;
+    var ref = id ? db.doc("fixedEvents/"+id) : db.collection("fixedEvents").doc();
+    ref.set(data).catch(function(){});
+    document.getElementById("fixed-form").reset();
+    document.getElementById("fixed-days").querySelectorAll("input").forEach(function(c){c.checked=false;});
+    document.getElementById("fixed-edit-id").value = "";
+    document.getElementById("fixed-form").hidden = true;
+    document.getElementById("fixed-submit").textContent = "新增";
+  });
+
+  /* ================= TASKS ================= */
+  var taskInputListEl = document.getElementById("task-input-list");
+  function fmtDeadlineDisplay(str){
+    if(!str) return "無";
+    return str.replace("T", " ");
+  }
+  function renderTaskInputList(){
+    taskInputListEl.innerHTML = "";
+    if(state.tasks.length===0){
+      taskInputListEl.innerHTML = '<li class="empty-note">還沒有任務。</li>';
+      return;
+    }
+    var sorted = state.tasks.slice().sort(function(a,b){
+      var da=parseDeadline(a.deadline), db_=parseDeadline(b.deadline);
+      if(da&&db_) return da-db_; if(da) return -1; if(db_) return 1; return 0;
+    });
+    sorted.forEach(function(t){
+      var li = document.createElement("li");
+      li.className = "row-item";
+      var dotColor = t.category==="must" ? "var(--rose)" : "var(--mustard)";
+      li.innerHTML =
+        '<span class="dot" style="background:'+dotColor+'"></span>'+
+        '<div class="info"><span class="name">'+esc(t.name)+(t.completed?' ✓':'')+'</span>'+
+        '<span class="meta">'+CATEGORY_LABEL[t.category]+' · 截止 '+esc(fmtDeadlineDisplay(t.deadline))+' · '+t.estimatedMinutes+' 分鐘'+((+t.repeatPerWeek||1)>1?' × 每週 '+t.repeatPerWeek+' 次':'')+'</span></div>'+
+        '<div class="actions">'+
+          '<button class="icon-btn" data-edit="'+t.id+'" title="編輯">✎</button>'+
+          '<button class="icon-btn" data-del="'+t.id+'" title="刪除">✕</button>'+
+        '</div>';
+      taskInputListEl.appendChild(li);
+    });
+  }
+  taskInputListEl.addEventListener("click", function(e){
+    var editBtn = e.target.closest("[data-edit]");
+    var delBtn = e.target.closest("[data-del]");
+    if(editBtn){
+      var t = state.tasks.find(function(x){return x.id===editBtn.dataset.edit;});
+      if(!t) return;
+      document.getElementById("task-form").hidden = false;
+      document.getElementById("task-edit-id").value = t.id;
+      document.getElementById("task-name").value = t.name;
+      document.getElementById("task-deadline").value = t.deadline||"";
+      document.getElementById("task-minutes").value = t.estimatedMinutes;
+      document.getElementById("task-category").value = t.category;
+      document.getElementById("task-pref").value = t.timePreference||"any";
+      document.getElementById("task-day").value = t.preferredDay||"";
+      document.getElementById("task-repeat").value = t.repeatPerWeek||1;
+      document.getElementById("task-minblock").value = t.minBlockMinutes||"";
+      document.getElementById("task-location").value = t.locationOptions||"";
+      document.getElementById("task-splittable").checked = !!t.splittable;
+      document.getElementById("task-notes").value = t.notes||"";
+      document.getElementById("task-submit").textContent = "更新";
+    } else if(delBtn){
+      if(!db) return;
+      db.doc("tasks/"+delBtn.dataset.del).delete().catch(function(){});
+    }
+  });
+  document.getElementById("task-form").addEventListener("submit", function(e){
+    e.preventDefault();
+    var id = document.getElementById("task-edit-id").value;
+    var data = {
+      name: document.getElementById("task-name").value.trim(),
+      deadline: document.getElementById("task-deadline").value,
+      estimatedMinutes: +document.getElementById("task-minutes").value,
+      category: document.getElementById("task-category").value,
+      timePreference: document.getElementById("task-pref").value,
+      preferredDay: document.getElementById("task-day").value,
+      repeatPerWeek: +document.getElementById("task-repeat").value || 1,
+      minBlockMinutes: +document.getElementById("task-minblock").value || null,
+      locationOptions: document.getElementById("task-location").value.trim(),
+      splittable: document.getElementById("task-splittable").checked,
+      notes: document.getElementById("task-notes").value.trim(),
+      completed: id ? undefined : false
+    };
+    if(!data.name || !data.estimatedMinutes) return;
+    if(!db) return;
+    if(id){
+      delete data.completed;
+      db.doc("tasks/"+id).update(data).catch(function(){});
+    } else {
+      db.collection("tasks").add(data).catch(function(){});
+    }
+    document.getElementById("task-form").reset();
+    document.getElementById("task-edit-id").value = "";
+    document.getElementById("task-form").hidden = true;
+    document.getElementById("task-submit").textContent = "新增";
+  });
+
+  /* ================= PREFS: day window ================= */
+  document.getElementById("pref-daytime-save").addEventListener("click", function(){
+    if(!db) return;
+    db.doc("prefs/main").set(Object.assign({}, state.prefs, {
+      dayStart: document.getElementById("pref-daystart").value,
+      dayEnd: document.getElementById("pref-dayend").value
+    })).catch(function(){});
+  });
+
+  /* ================= PREFS: protected blocks ================= */
+  var protectedListEl = document.getElementById("protected-list");
+  function renderProtectedList(){
+    protectedListEl.innerHTML = "";
+    var list = state.prefs.protectedBlocks||[];
+    if(list.length===0){ protectedListEl.innerHTML = '<li class="empty-note">還沒有保護時段。</li>'; return; }
+    list.forEach(function(pb, idx){
+      var li = document.createElement("li");
+      li.className = "row-item";
+      var days = (pb.days||[]).map(function(d){return DAY_LABEL[d];}).join("、");
+      li.innerHTML =
+        '<span class="dot" style="background:var(--free-line)"></span>'+
+        '<div class="info"><span class="name">'+esc(pb.label)+'</span>'+
+        '<span class="meta">'+esc(days)+' · '+esc(pb.start)+'–'+esc(pb.end)+'</span></div>'+
+        '<div class="actions">'+
+          '<button class="icon-btn" data-edit="'+idx+'" title="編輯">✎</button>'+
+          '<button class="icon-btn" data-del="'+idx+'" title="刪除">✕</button>'+
+        '</div>';
+      protectedListEl.appendChild(li);
+    });
+  }
+  protectedListEl.addEventListener("click", function(e){
+    var editBtn = e.target.closest("[data-edit]");
+    var delBtn = e.target.closest("[data-del]");
+    var list = state.prefs.protectedBlocks||[];
+    if(editBtn){
+      var pb = list[+editBtn.dataset.edit]; if(!pb) return;
+      document.getElementById("protected-form").hidden = false;
+      document.getElementById("protected-edit-id").value = editBtn.dataset.edit;
+      document.getElementById("protected-label").value = pb.label;
+      setCheckedDays(document.getElementById("protected-days"), pb.days);
+      document.getElementById("protected-start").value = pb.start;
+      document.getElementById("protected-end").value = pb.end;
+      document.getElementById("protected-submit").textContent = "更新";
+    } else if(delBtn){
+      if(!db) return;
+      var next = list.slice(); next.splice(+delBtn.dataset.del,1);
+      db.doc("prefs/main").update({protectedBlocks: next}).catch(function(){});
+    }
+  });
+  document.getElementById("protected-form").addEventListener("submit", function(e){
+    e.preventDefault();
+    var idx = document.getElementById("protected-edit-id").value;
+    var entry = {
+      label: document.getElementById("protected-label").value.trim(),
+      days: getCheckedDays(document.getElementById("protected-days")),
+      start: document.getElementById("protected-start").value,
+      end: document.getElementById("protected-end").value
+    };
+    if(!entry.label || entry.days.length===0 || !entry.start || !entry.end) return;
+    if(!db) return;
+    var list = (state.prefs.protectedBlocks||[]).slice();
+    if(idx!==""){ list[+idx] = entry; } else { list.push(entry); }
+    db.doc("prefs/main").update({protectedBlocks: list}).catch(function(){});
+    document.getElementById("protected-form").reset();
+    document.getElementById("protected-days").querySelectorAll("input").forEach(function(c){c.checked=false;});
+    document.getElementById("protected-edit-id").value = "";
+    document.getElementById("protected-form").hidden = true;
+    document.getElementById("protected-submit").textContent = "新增";
+  });
+
+  /* ================= PREFS: sacrifice priority ================= */
+  var priorityListEl = document.getElementById("priority-list");
+  function renderPriorityList(){
+    priorityListEl.innerHTML = "";
+    var list = state.prefs.sacrificePriority||[];
+    if(list.length===0){ priorityListEl.innerHTML = '<li class="empty-note">還沒有項目。</li>'; return; }
+    list.forEach(function(item, idx){
+      var li = document.createElement("li");
+      li.innerHTML =
+        '<span class="num">'+(idx+1)+'</span>'+
+        '<span class="txt">'+esc(item)+'</span>'+
+        '<span class="mini">'+
+          '<button data-up="'+idx+'" '+(idx===0?"disabled":"")+'>↑</button>'+
+          '<button data-down="'+idx+'" '+(idx===list.length-1?"disabled":"")+'>↓</button>'+
+          '<button data-rm="'+idx+'">✕</button>'+
+        '</span>';
+      priorityListEl.appendChild(li);
+    });
+  }
+  priorityListEl.addEventListener("click", function(e){
+    var btn = e.target.closest("button"); if(!btn||!db) return;
+    var list = (state.prefs.sacrificePriority||[]).slice();
+    if(btn.dataset.up!==undefined){
+      var i=+btn.dataset.up; if(i>0){ var tmp=list[i-1]; list[i-1]=list[i]; list[i]=tmp; }
+    } else if(btn.dataset.down!==undefined){
+      var j=+btn.dataset.down; if(j<list.length-1){ var tmp2=list[j+1]; list[j+1]=list[j]; list[j]=tmp2; }
+    } else if(btn.dataset.rm!==undefined){
+      list.splice(+btn.dataset.rm,1);
+    }
+    db.doc("prefs/main").update({sacrificePriority: list}).catch(function(){});
+  });
+  document.getElementById("priority-add").addEventListener("click", function(){
+    var input = document.getElementById("priority-new");
+    var val = input.value.trim();
+    if(!val || !db) return;
+    var list = (state.prefs.sacrificePriority||[]).slice();
+    list.push(val);
+    db.doc("prefs/main").update({sacrificePriority: list}).catch(function(){});
+    input.value = "";
+  });
+
+  /* ================= OUTPUT RENDER ================= */
+  var weekRangeEl = document.getElementById("week-range");
+  var calendarEl = document.getElementById("calendar");
+  var summaryEl = document.getElementById("summary");
+  var taskListEl = document.getElementById("task-list");
+
+  document.getElementById("week-prev").addEventListener("click", function(){ state.weekOffset--; renderOutput(); });
+  document.getElementById("week-next").addEventListener("click", function(){ state.weekOffset++; renderOutput(); });
+  document.getElementById("week-this").addEventListener("click", function(){ state.weekOffset=0; renderOutput(); });
+
+  var currentSchedule = null;
+
+  function renderOutput(){
+    var weekDates = getWeekDates(new Date(), state.weekOffset);
+    weekRangeEl.textContent = fmtDateShort(weekDates[0])+"（一） – "+fmtDateShort(weekDates[6])+"（日）"+(state.weekOffset===0?"（本週）":"");
+
+    var result = schedule(weekDates, state.prefs, state.fixedEvents, state.tasks);
+    currentSchedule = result;
+    var dayStart = result.dayStart, dayEnd = result.dayEnd, span = dayEnd-dayStart;
+
+    if(result.shortfalls.length===0){
+      summaryEl.className = "summary ok";
+      summaryEl.innerHTML = "🎉 本週 must 任務與每週目標都已排入，沒有延遲。";
+    } else {
+      summaryEl.className = "summary warn";
+      var items = result.shortfalls.map(function(s){
+        return s.kind==="task"
+          ? "<li>「"+esc(s.name)+"」還差 "+s.minutes+" 分鐘沒排進去，截止前完不成，需要調整</li>"
+          : "<li>「"+esc(s.name)+"」還少 "+s.missing+" 次没排到</li>";
+      }).join("");
+      summaryEl.innerHTML = "⚠️ 這週排不下：<ul>"+items+"</ul>";
+    }
+
+    calendarEl.innerHTML = "";
+    var axis = document.createElement("div");
+    axis.className = "axis";
+    for(var h=Math.ceil(dayStart/60); h*60<=dayEnd; h++){
+      var top = (h*60-dayStart)/span*100;
+      var tick = document.createElement("span");
+      tick.className = "tick";
+      tick.style.top = top+"%";
+      tick.textContent = (h<10?"0":"")+h;
+      axis.appendChild(tick);
+    }
+    calendarEl.appendChild(axis);
+
+    var todayKey = null;
+    if(state.weekOffset===0){
+      var today = new Date();
+      result.days.forEach(function(day){ if(sameDate(day.date, today)) todayKey = day.key; });
+    }
+
+    result.days.forEach(function(day){
+      var col = document.createElement("div");
+      col.className = "day-col" + (day.key===todayKey ? " today" : "");
+      var head = document.createElement("div");
+      head.className = "day-head";
+      head.innerHTML = '<span class="dow">'+DAY_LABEL[day.key]+'</span><span class="date">'+fmtDateShort(day.date)+'</span>';
+      col.appendChild(head);
+      var body = document.createElement("div");
+      body.className = "day-body";
+      day.blocks.forEach(function(b){
+        var top = (b.start-dayStart)/span*100;
+        var height = (b.end-b.start)/span*100;
+        var div = document.createElement("div");
+        div.className = "block "+b.type;
+        div.style.top = top+"%";
+        div.style.height = Math.max(height, 2.2)+"%";
+        div.title = b.detail;
+        if(b.taskId){ div.dataset.taskId = b.taskId; if(taskCompletedMap[b.taskId]) div.classList.add("done"); }
+        div.innerHTML = '<span class="lbl">'+esc(b.label)+'</span>';
+        body.appendChild(div);
+      });
+      col.appendChild(body);
+      calendarEl.appendChild(col);
+    });
+
+    renderMasterList();
+    renderFreeTime(result);
+    if(!currentReflectKey || currentReflectKey !== weekDocKey(weekDates)) loadReflection(weekDates);
+  }
+
+  var taskCompletedMap = {};
+
+  function renderMasterList(){
+    var sorted = state.tasks.slice().sort(function(a,b){
+      var da=parseDeadline(a.deadline), db_=parseDeadline(b.deadline);
+      if(da&&db_) return da-db_; if(da) return -1; if(db_) return 1; return 0;
+    });
+    taskListEl.innerHTML = "";
+    if(sorted.length===0){
+      taskListEl.innerHTML = '<li class="empty-note">先到「輸入資料」新增任務吧。</li>';
+      return;
+    }
+    var now = new Date();
+    var plannedMap = {};
+    if(currentSchedule){
+      currentSchedule.days.forEach(function(day){
+        day.blocks.forEach(function(b){
+          if(!b.taskId) return;
+          (plannedMap[b.taskId] = plannedMap[b.taskId]||[]).push(DAY_LABEL[day.key]+" "+fmtMin(b.start)+"–"+fmtMin(b.end));
+        });
+      });
+    }
+    sorted.forEach(function(t){
+      taskCompletedMap[t.id] = !!t.completed;
+      var deadline = parseDeadline(t.deadline);
+      var overdue = deadline && deadline < now && !t.completed;
+      var planned = plannedMap[t.id];
+      var status = t.completed ? "已完成" : overdue ? "逾期" : planned ? "已排入" : "未排入";
+      var row = document.createElement("li");
+      row.className = "task-row" + (t.completed ? " completed" : "");
+      row.innerHTML =
+        '<button class="check" data-toggle="'+t.id+'" aria-checked="'+!!t.completed+'" aria-label="標記完成：'+esc(t.name)+'">'+(t.completed?"✓":"")+'</button>'+
+        '<div class="task-body">'+
+          '<span class="task-name">'+esc(t.name)+'</span>'+
+          '<div class="task-meta">'+
+            '<span class="pill '+t.category+'">'+CATEGORY_LABEL[t.category]+'</span>'+
+            '<span class="pill'+(overdue?' overdue':'')+'">'+status+'</span>'+
+            '<span>截止 '+esc(fmtDeadlineDisplay(t.deadline))+'</span>'+
+            '<span>'+t.estimatedMinutes+' 分鐘'+((+t.repeatPerWeek||1)>1?' × '+t.repeatPerWeek:'')+'</span>'+
+            (planned ? '<span>已排：'+esc(planned.join('、'))+'</span>' : '')+
+          '</div>'+
+          (t.notes ? '<div class="task-meta" style="margin-top:2px"><span>備註：'+esc(t.notes)+'</span></div>' : '')+
+        '</div>';
+      taskListEl.appendChild(row);
+    });
+  }
+  var freetimeListEl = document.getElementById("freetime-list");
+  function suggestFor(duration){
+    if(duration < 60) return "閱讀／回信／整理筆記";
+    if(duration < 150) return "運動／閱讀／社交";
+    return "朋友／電影／完全自由";
+  }
+  function renderFreeTime(result){
+    var rows = [];
+    result.days.forEach(function(day){
+      day.gaps.forEach(function(g){
+        var dur = g.end-g.start;
+        if(dur < 30) return;
+        rows.push({day:day, start:g.start, end:g.end, dur:dur});
+      });
+    });
+    freetimeListEl.innerHTML = "";
+    if(rows.length===0){
+      freetimeListEl.innerHTML = '<li class="empty-note">這週沒有明顯的空白時段了，可能排得有點緊。</li>';
+      return;
+    }
+    rows.forEach(function(r){
+      var li = document.createElement("li");
+      li.className = "freetime-row";
+      var durText = r.dur>=60 ? (Math.floor(r.dur/60)+"小時"+(r.dur%60?(r.dur%60)+"分":"")) : r.dur+"分鐘";
+      li.innerHTML =
+        '<span class="when">'+DAY_LABEL[r.day.key]+' '+fmtMin(r.start)+'–'+fmtMin(r.end)+'</span>'+
+        '<span class="dur">'+durText+'</span>'+
+        '<span class="ideas">'+suggestFor(r.dur)+'</span>';
+      freetimeListEl.appendChild(li);
+    });
+  }
+
+  /* ================= WEEKLY REFLECTION ================= */
+  var reflectFields = Array.prototype.slice.call(document.querySelectorAll("[data-key]"));
+  var reflectTimer = null;
+  var currentReflectKey = null;
+  function weekDocKey(weekDates){
+    var d = weekDates[0];
+    return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0");
+  }
+  function loadReflection(weekDates){
+    currentReflectKey = weekDocKey(weekDates);
+    reflectFields.forEach(function(f){ f.value = ""; });
+    if(!db) return;
+    db.doc("reflections/"+currentReflectKey).get().then(function(snap){
+      if(currentReflectKey !== weekDocKey(weekDates)) return; // navigated away meanwhile
+      var data = snap.data() || {};
+      reflectFields.forEach(function(f){ f.value = data[f.dataset.key] || ""; });
+    }).catch(function(){});
+  }
+  reflectFields.forEach(function(f){
+    f.addEventListener("input", function(){
+      clearTimeout(reflectTimer);
+      var key = currentReflectKey;
+      reflectTimer = setTimeout(function(){
+        if(!db || !key) return;
+        var payload = {};
+        reflectFields.forEach(function(x){ payload[x.dataset.key] = x.value; });
+        db.doc("reflections/"+key).set(payload).catch(function(){});
+      }, 500);
+    });
+  });
+
+  /* ================= PDF EXPORT ================= */
+  var pdfLibsPromise = null;
+  function loadScript(src){
+    return new Promise(function(resolve, reject){
+      var s = document.createElement("script");
+      s.src = src; s.onload = resolve; s.onerror = reject;
+      document.head.appendChild(s);
+    });
+  }
+  function ensurePdfLibs(){
+    if(!pdfLibsPromise){
+      pdfLibsPromise = Promise.all([
+        loadScript("https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"),
+        loadScript("https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js")
+      ]);
+    }
+    return pdfLibsPromise;
+  }
+  document.getElementById("pdf-download").addEventListener("click", function(){
+    var btn = this;
+    var oldText = btn.textContent;
+    btn.textContent = "準備中…"; btn.disabled = true;
+    ensurePdfLibs().then(function(){
+      return claude.use("downloads").then(function(downloads){
+        if(!downloads){ btn.textContent = oldText; btn.disabled = false; return; }
+        var page1 = document.getElementById("pdf-page1");
+        var page2 = document.getElementById("pdf-page2");
+        var opts = { backgroundColor: getComputedStyle(document.body).backgroundColor, scale: 2, useCORS: true,
+          ignoreElements: function(el){ return el && el.dataset && el.dataset.nopdf === "1"; } };
+        return Promise.all([window.html2canvas(page1, opts), window.html2canvas(page2, opts)]).then(function(canvases){
+          var jsPDF = window.jspdf.jsPDF;
+          var pdf = new jsPDF({ orientation: "portrait", unit: "pt", format: "a4" });
+          var pageW = pdf.internal.pageSize.getWidth();
+          var pageH = pdf.internal.pageSize.getHeight();
+          var margin = 24;
+          canvases.forEach(function(canvas, i){
+            if(i>0) pdf.addPage();
+            var imgW = pageW - margin*2;
+            var imgH = canvas.height * (imgW/canvas.width);
+            var y = margin;
+            if(imgH > pageH - margin*2){
+              // scale down to fit one page height, centered
+              var scale = (pageH - margin*2) / imgH;
+              imgH = imgH*scale; var imgW2 = imgW*scale;
+              pdf.addImage(canvas.toDataURL("image/png"), "PNG", margin + (imgW-imgW2)/2, y, imgW2, imgH);
+            } else {
+              pdf.addImage(canvas.toDataURL("image/png"), "PNG", margin, y, imgW, imgH);
+            }
+          });
+          var weekDates = getWeekDates(new Date(), state.weekOffset);
+          var fname = "Weekly_Planner_"+isoDate(weekDates[0])+"_to_"+isoDate(weekDates[6])+".pdf";
+          var blob = pdf.output("blob");
+          return downloads.save({ filename: fname, data: blob });
+        });
+      });
+    }).catch(function(err){ console.warn("pdf export failed", err); }).then(function(){
+      btn.textContent = oldText; btn.disabled = false;
+    });
+  });
+  function isoDate(d){ return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0"); }
+
+  taskListEl.addEventListener("click", function(e){
+    var btn = e.target.closest("[data-toggle]"); if(!btn||!db) return;
+    var cur = btn.getAttribute("aria-checked")==="true";
+    db.doc("tasks/"+btn.dataset.toggle).update({completed: !cur}).catch(function(){});
+  });
+
+  /* ================= DB WIRING ================= */
+  function subscribeAll(db_){
+    unsub.push(db_.collection("fixedEvents").onSnapshot(function(snap){
+      state.fixedEvents = snap.docs.map(function(d){ return Object.assign({id:d.id}, d.data()); });
+      renderFixedList();
+      if(!tabOutput.hidden) renderOutput();
+    }, function(err){ console.warn(err); }));
+
+    unsub.push(db_.collection("tasks").onSnapshot(function(snap){
+      state.tasks = snap.docs.map(function(d){ return Object.assign({id:d.id}, d.data()); });
+      renderTaskInputList();
+      if(!tabOutput.hidden) renderOutput();
+    }, function(err){ console.warn(err); }));
+
+    unsub.push(db_.doc("prefs/main").onSnapshot(function(snap){
+      if(snap.exists){
+        state.prefs = Object.assign({dayStart:"07:30",dayEnd:"23:30",protectedBlocks:[],sacrificePriority:[]}, snap.data());
+      }
+      document.getElementById("pref-daystart").value = state.prefs.dayStart||"07:30";
+      document.getElementById("pref-dayend").value = state.prefs.dayEnd||"23:30";
+      renderProtectedList();
+      renderPriorityList();
+      if(!tabOutput.hidden) renderOutput();
+    }, function(err){ console.warn(err); }));
+  }
+
+  renderFixedList(); renderTaskInputList(); renderProtectedList(); renderPriorityList();
+
+  claude.use("db").then(function(d){
+    db = d;
+    if(!db) return;
+    subscribeAll(db);
+  }).catch(function(){});
+
+})();
+</script>

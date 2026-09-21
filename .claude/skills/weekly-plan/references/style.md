@@ -1,23 +1,29 @@
-# Output style notes
+# Output style notes (as implemented in `app.html`)
 
-The output should read like a paper planner (手帳) weekly spread, not a generic SaaS
-calendar. Concretely:
+A botanical planner look, not a generic SaaS calendar/dashboard:
 
-- Warm, slightly textured background rather than stark white; a page/notebook feel.
-- Handwriting-adjacent or rounded display font for headings is fine; body text stays legible
-  (a clean sans/serif), per the artifact-design type-pairing guidance.
-- Four-category legend, always visible, each with a color **and** a shape/icon so it survives
-  grayscale printing:
-  - Fixed events — solid block, neutral/ink color, small pin icon
-  - Scheduled tasks — colored block, icon varies by Must (!) / Want (heart) / Optional (dot)
-  - Personal activities — a distinct accent color (e.g. green), leaf/activity icon
-  - Free blocks — outline only, no fill, so the eye rests there instead of skipping past it
-- Keep the grid honest: if a day has 3 free hours, show 3 hours of visible empty space, not a
-  compressed sliver next to padded task blocks.
-- Task master list: group by category or sort by deadline (pick one, state which, in a small
-  toggle if easy — not required for v1). Overdue-but-incomplete tasks get a visible warning
-  treatment (not just red text — color alone isn't enough).
-- Must-task or weekly-target shortfalls from the algorithm go in a small callout at the top
-  of the page, not buried — the user needs to see what didn't fit before the week starts.
-- Mobile width (16px gutters, no horizontal scroll) — the user will likely check this on
-  their phone mid-day.
+- Warm oat/parchment paper background (`--bg`/`--paper`), sage-green header bands per day
+  column, a small hand-drawn leaf sprig in the page header (inline SVG, no external asset).
+- Type: "Caveat" (script) for the big title and day-column headers, "Noto Sans TC" for
+  everything else — Caveat has no CJK coverage, so it's used only where the text is Latin or
+  numeric.
+- Four visually distinct classes, color **and** shape/border so it survives grayscale:
+  - **Fixed events** — solid sage block.
+  - **Must tasks** — solid rose/terracotta block.
+  - **Want tasks** — solid mustard block.
+  - **Optional tasks** — mustard block at reduced opacity (clearly related to Want, clearly
+    lower-commitment).
+  - **Protected/free blocks** — dashed outline only, no fill — the eye should rest there.
+- The week is 7 side-by-side day columns (not 7 stacked rows) with a shared time axis on the
+  left, matching a real paper weekly-planner grid; block height/position within a column is
+  proportional to `(dayEnd-dayStart)`, so real empty time reads as real empty space.
+- A summary callout above the grid is green/celebratory when nothing was dropped, and switches
+  to a warm red warning listing every shortfall by name when something didn't fit — this is
+  the single most important thing on the page and sits above the fold.
+- Task master list, free-time suggestions, and the weekly reflection log are separate cards
+  below the calendar, in that order — detail after the overview, editable notes last.
+- The PDF export (`html2canvas` + `jsPDF`, both loaded from cdnjs at click time, saved via the
+  `downloads` capability) rasterizes the on-screen cards rather than re-laying-out text in the
+  PDF — this sidesteps CJK font embedding in jsPDF entirely, at the cost of the PDF being an
+  image rather than selectable text. Revisit only if the user asks for selectable/searchable
+  PDF text.

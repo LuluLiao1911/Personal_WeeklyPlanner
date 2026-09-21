@@ -1,97 +1,73 @@
 ---
 name: weekly-plan
-description: Generate a personalized Monday–Sunday weekly schedule from the user's fixed events, tasks, deadlines, estimated durations, and time/location preferences. Produces an interactive "手帳" (planner-style) HTML weekly grid plus a task master list, so must-do work stops crowding out exercise, reading, social time, and free blocks. Use when the user asks to plan their week, build/update their weekly schedule, or says something like "幫我排這週的計畫" / "更新我的週計畫".
+description: Publish or update the user's personal weekly planner web app (fixed events + tasks + preferences input, an auto-computed Monday–Sunday schedule, free-time suggestions, a weekly reflection log, and PDF export). Use when the user asks to set up, open, update, or change their weekly planner/scheduler, or says something like "幫我排這週的計畫" / "打開我的週計畫" / "更新排程工具".
 ---
 
 # Weekly Plan
 
-## Purpose
+## What this is
 
-The user's default failure mode: without deliberate planning, "must-do" work eats the whole
-week and exercise / reading / social / rest get silently sacrificed. This skill turns
-structured inputs (fixed commitments + tasks with metadata + personal preferences) into a
-week that protects the things that lose by default, while still hitting deadlines.
+`app.html` in this repo is a complete, self-serve weekly planner: a single-page app with
+two tabs.
 
-**What this skill decides:** where things go on the calendar — sequencing tasks against fixed
-events, fitting short/splittable tasks into small gaps, and packing work efficiently.
+1. **輸入資料 (Input)** — forms to add/edit/delete fixed events, tasks, and preferences.
+   No YAML, no re-running a skill to see a new week — data is entered once and lives in the
+   artifact's own database.
+2. **本週計畫 (This week)** — a 手帳-style Monday–Sunday calendar computed **live in the
+   browser** from that data, plus a task master list, free-time suggestions, a weekly
+   reflection log, and a PDF export button. Recomputes instantly whenever data changes; no
+   Claude round-trip needed to see next week or an updated plan.
 
-**What this skill never decides:** the user's priorities. It never invents a task's
-Must/Want/Optional category, never decides which evenings stay free, never decides how many
-times a week the user should exercise, and never chooses what gets cut when time is tight.
-Those calls come only from the input files below. If a task or preference is missing a
-required field, ask the user for it — do not guess a priority value.
+The scheduling algorithm runs as JavaScript inside the published page (see `schedule()` in
+`app.html`) — it is not something Claude re-derives per request. Claude's job is to
+**publish or update this file as an Artifact**, and to modify the JS/HTML when the user wants
+the tool itself changed (new field, different rule, different look).
 
-## Inputs
+## What it decides vs. what the user decides
 
-Read three YAML files from the user's `data/` directory (create them from the templates in
-`templates/` on first run if they don't exist yet):
+The scheduler places things on the calendar: it sequences tasks against fixed events, splits
+and packs tasks into gaps, and fills small fragments with short splittable tasks. It never
+invents a task's Must/Want/Optional category, never decides which evenings stay protected,
+never decides how many times a week to exercise, and never silently drops a Must task that
+doesn't fit — it surfaces a shortfall instead. Those calls come only from what the user enters
+in the Input tab.
 
-1. **`data/fixed_events.yaml`** — immovable commitments: time, day(s), location, people.
-2. **`data/tasks.yaml`** — the work backlog. Each task carries: name, deadline, estimated
-   duration, category (`must` / `want` / `optional`), whether it's splittable, its minimum
-   useful time block (the shortest chunk worth opening the task for), preferred time-of-day,
-   and acceptable locations.
-3. **`data/preferences.yaml`** — the user's own standing decisions: protected free blocks
-   (e.g. Friday evening, Sunday morning), weekly personal-activity targets (e.g. "exercise ×3,
-   45 min, mornings"), and a sacrifice-priority ordering for when the week is overbooked.
+## Data model (stored in the artifact's `db` capability)
 
-Full field definitions and examples are in `templates/fixed_events.yaml`,
-`templates/tasks.yaml`, and `templates/preferences.yaml`. If any file is missing fields the
-algorithm needs (e.g. a task with no category or no estimated time), stop and ask — don't
-default it silently.
+- **`fixedEvents` collection** — immovable: `name, days[], start, end, location, people`.
+- **`tasks` collection** — the whole backlog, must/want/optional alike, including recurring
+  personal activities (exercise, reading…) modeled as a Want/Optional task with no deadline
+  and `repeatPerWeek > 1`. Fields: `name, category, deadline (optional), estimatedMinutes,
+  repeatPerWeek, splittable, minBlockMinutes, timePreference, preferredDay, locationOptions,
+  notes, completed`.
+- **`prefs/main` doc** — `dayStart, dayEnd, protectedBlocks[], sacrificePriority[]`.
+- **`reflections/<mondayISOdate>` docs** — one per week: `wins, unfinished, longer, change,
+  notes`, autosaved from the reflection textareas.
 
-## Algorithm
+## Publishing / updating
 
-See `references/algorithm.md` for the full placement algorithm (gap-finding, splitting rules,
-tie-breaking, overflow handling). Summary:
+- First-time setup: load `artifact-capabilities`, then `Artifact({file_path: "app.html",
+  capabilities: {db: {}, downloads: {}}, icon: "calendar"})`. Seed the three collections with
+  a small worked example via `ArtifactData` (batch `set`) so the page opens in a realistic
+  working state instead of empty — see the app's own in-app forms for the exact field shapes.
+- Any later change to `app.html` in this repo: republish to the **same URL** (pass `url`) so
+  the link and the user's stored data keep working.
+- If the user asks to change how scheduling works (e.g. a new task field, a different
+  fragment-time rule, a different free-time suggestion heuristic), edit the `schedule()`
+  function and the matching form fields directly in `app.html`, then republish. See
+  `references/algorithm.md` for the placement rules the current implementation follows, and
+  `references/style.md` for the visual language (a botanical planner aesthetic, not a generic
+  dashboard).
 
-1. Lay fixed events on the Mon–Sun grid first — they never move.
-2. Lay down `preferences.yaml` protected blocks next — they are treated like fixed events and
-   nothing else may be scheduled over them.
-3. Place `must` tasks by deadline urgency (earliest deadline first), preferring blocks that
-   meet the task's full estimated duration; only split a task across multiple blocks if
-   `splittable: true`, and never into a block smaller than `min_block`.
-4. Place `want` tasks into remaining slots that match their time-of-day preference, then
-   `optional` tasks into whatever is left.
-5. Use small leftover gaps (below any unsplit task's `min_block`) for splittable short tasks
-   that fit — this is the "零碎時間" pass.
-6. Fit weekly personal-activity targets from `preferences.yaml` (exercise, reading, etc.)
-   into remaining slots that match their preferred time-of-day, before optional tasks claim
-   that space.
-7. Whatever remains unscheduled and unclaimed stays a visible **free block** — do not fill it
-   just because it's empty.
-8. If a `must` task cannot fit before its deadline given everything above, do not silently
-   drop it or silently cannibalize a protected block: flag it in the output and tell the user
-   directly, listing the shortfall in hours.
+## Guardrails already built into `schedule()`
 
-## Output
-
-Produce two things in a single interactive HTML artifact (load `artifact-design` and
-`artifact-capabilities` skills before building it — this page needs the `db` capability so
-completion checkboxes persist across the week instead of resetting every time the plan is
-regenerated):
-
-1. **Weekly grid (Mon–Sun), 手帳-style** — a planner-page layout, not a generic calendar UI.
-   Time down the side, days across the top (or a day-block/agenda layout if that reads
-   cleaner at phone width — see `references/style.md`). Every placed item is visually
-   classed into exactly one of four categories, distinguished by color/texture (not color
-   alone — add an icon or label so it still reads in grayscale):
-   - **Fixed events** (immovable)
-   - **Scheduled tasks** (from `tasks.yaml`, sub-tagged Must/Want/Optional)
-   - **Personal activities** (from `preferences.yaml` targets — exercise, reading, social...)
-   - **Free blocks** (intentionally empty, protected or leftover)
-2. **Task master list** — every task from `tasks.yaml` in one table/list: name, category,
-   deadline, estimated time, and a completion checkbox. Checking a task off writes to the
-   artifact's shared `db` so progress survives regeneration; re-running this skill next week
-   must not wipe prior completion state for tasks that still exist. Sort or group by deadline
-   so the user can see at a glance what's coming up and what's already done.
-
-If the user already has a published weekly-plan artifact (check for a saved URL, e.g. in
-`data/artifact_url.txt`), update that artifact in place with `Artifact({url: ...})` rather
-than publishing a new one each week, so the link and the completion history stay stable.
-Save the URL back to `data/artifact_url.txt` after the first publish.
-
-## Style detail
-
-See `references/style.md` for the color/category legend and layout notes so the page reads
-as a planner, not a dashboard.
+- Fixed events and protected blocks are placed first and are never touched again — nothing
+  else can be scheduled over them.
+- A task's eligible time window is clipped to its exact deadline (date **and** time), not
+  just the calendar date, so nothing is ever silently placed after its own deadline.
+- A Must task (or a recurring Want/Optional target) that cannot fully fit produces a visible
+  shortfall in the summary callout — it is never quietly dropped or overbooked.
+- Preference-matched placement (`timePreference: morning/afternoon/evening`) lands inside the
+  actual preferred window, not just anywhere in a gap that merely overlaps it.
+- Free time is never auto-filled — leftover gaps stay blank on the calendar and are only
+  listed, as suggestions, in the "自由時段建議" section.
