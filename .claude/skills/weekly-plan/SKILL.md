@@ -1,6 +1,6 @@
 ---
 name: weekly-plan
-description: Publish or update the user's personal weekly planner web app (fixed events + tasks + preferences input, an auto-computed Monday–Sunday schedule, free-time suggestions, a weekly reflection log, and PDF export). Use when the user asks to set up, open, update, or change their weekly planner/scheduler, or says something like "幫我排這週的計畫" / "打開我的週計畫" / "更新排程工具".
+description: Publish or update the user's personal weekly planner web app (fixed events + tasks + preferences input, an auto-computed Monday–Sunday schedule, free-time suggestions, a weekly reflection log, and PDF export). Use when the user asks to set up, open, update, or change their weekly planner/scheduler, or says something like "help me plan this week" / "open my weekly plan" / "update the scheduler".
 ---
 
 # Weekly Plan
@@ -10,10 +10,10 @@ description: Publish or update the user's personal weekly planner web app (fixed
 `app.html` in this repo is a complete, self-serve weekly planner: a single-page app with
 two tabs.
 
-1. **輸入資料 (Input)** — forms to add/edit/delete fixed events, tasks, and preferences.
+1. **Input tab** — forms to add/edit/delete fixed events, tasks, and preferences.
    No YAML, no re-running a skill to see a new week — data is entered once and lives in the
    artifact's own database.
-2. **本週計畫 (This week)** — a 手帳-style Monday–Sunday calendar computed **live in the
+2. **This Week tab** — a paper-planner-style Monday–Sunday calendar computed **live in the
    browser** from that data, plus a task master list, free-time suggestions, a weekly
    reflection log, and a PDF export button. Recomputes instantly whenever data changes; no
    Claude round-trip needed to see next week or an updated plan.
@@ -34,7 +34,7 @@ in the Input tab.
 
 ## Dev/test tools (not the normal user flow)
 
-A collapsed "開發 / 測試工具" panel at the bottom of the Input tab lets a developer import a
+A collapsed "Dev / Test Tools" panel at the bottom of the Input tab lets a developer import a
 JSON testcase (fixed events + tasks + preferences + protected blocks + a pinned
 `weekStart`), export the current input as one, or reset everything. It exists so the same
 input can be replayed against different versions of this planner and produce comparable
@@ -83,4 +83,4 @@ Import validates everything up front and loads nothing at all if any field is in
 - Preference-matched placement (`timePreference: morning/afternoon/evening`) lands inside the
   actual preferred window, not just anywhere in a gap that merely overlaps it.
 - Free time is never auto-filled — leftover gaps stay blank on the calendar and are only
-  listed, as suggestions, in the "自由時段建議" section.
+  listed, as suggestions, in the "Free-Time Suggestions" section.

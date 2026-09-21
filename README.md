@@ -2,7 +2,8 @@
 
 A self-serve weekly planner app: enter fixed commitments, tasks, and preferences once through
 a form, and get a Monday–Sunday schedule that protects exercise, reading, social time, and
-real free blocks instead of letting "一定要完成的事情" quietly eat the whole week.
+real free blocks instead of letting "the things that absolutely must get done" quietly eat
+the whole week.
 
 **Live app:** https://claude.ai/artifact/9KtMmdz6JLccGjGs4GrJFE
 
@@ -10,9 +11,9 @@ real free blocks instead of letting "一定要完成的事情" quietly eat the w
 
 `app.html` is a single-page app with two tabs, published as a Claude Artifact:
 
-1. **輸入資料 (Input)** — add/edit/delete fixed events, tasks, and preferences through
+1. **Input tab** — add/edit/delete fixed events, tasks, and preferences through
    forms. No files to edit by hand.
-2. **本週計畫 (This week)** — a 手帳-style weekly calendar, computed live in your browser the
+2. **This Week tab** — a paper-planner-style weekly calendar, computed live in your browser the
    moment you open the tab or change any data. Includes:
    - the 7-day grid (fixed events / Must / Want / Optional tasks / protected & free time,
      each visually distinct),
@@ -21,7 +22,7 @@ real free blocks instead of letting "一定要完成的事情" quietly eat the w
      only, never auto-booked),
    - a weekly reflection log (wins / unfinished / underestimated / what to change / notes,
      autosaved per week),
-   - a "下載本週 PDF" button that exports the current week as a 2-page PDF.
+   - a "Download This Week's PDF" button that exports the current week as a 2-page PDF.
 
 Everything persists in the artifact's own database, so closing the tab or coming back next
 week doesn't lose anything — completed tasks stay completed, reflections stay per-week.
@@ -48,7 +49,7 @@ app.html                                the whole app (single file, published as
 
 ## Dev/test tools
 
-The Input tab has a collapsed "開發 / 測試工具" panel at the bottom — not the normal way to
+The Input tab has a collapsed "Dev / Test Tools" panel at the bottom — not the normal way to
 use the planner, but useful when changing the scheduling logic: import a JSON testcase (fixed
 events, tasks, preferences, protected blocks, and a pinned week) to replace all current input
 in one shot, export the current input back out as JSON, or reset everything to a blank state.

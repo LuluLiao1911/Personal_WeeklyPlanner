@@ -47,7 +47,7 @@ For each session:
 
 Whatever remains in `day.gaps` after every task pass **is** the free time — nothing fills it
 just because it's empty. Those leftover gaps (≥ 30 min) are also what populates the
-"自由時段建議" (Free-Time Suggestions) list, bucketed by length into short/medium/long
+Free-Time Suggestions list, bucketed by length into short/medium/long
 activity ideas — suggestions only, never written to the calendar itself.
 
 ## Location

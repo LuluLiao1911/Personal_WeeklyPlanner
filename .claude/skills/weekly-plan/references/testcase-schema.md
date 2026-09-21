@@ -1,6 +1,6 @@
 # Testcase JSON schema (Version 1)
 
-This documents the JSON format accepted by the **開發 / 測試工具 → 匯入測試案例 JSON**
+This documents the JSON format accepted by the **Dev / Test Tools → Import Test Case JSON**
 feature in `app.html` (the `validateTestCase()` function). It exists purely to make dev
 testing reproducible — the normal user workflow is still the form UI. The schema is not a new
 data model: every field here is the exact field `schedule()` and the form UI already read and
@@ -17,7 +17,7 @@ branches on where the data came from.
   "preferences": {
     "dayStart": "08:00",
     "dayEnd": "22:00",
-    "sacrificePriority": ["optional 任務", "閱讀"]
+    "sacrificePriority": ["optional tasks", "reading"]
   },
   "protectedBlocks": [
     { "label": "Friday night off", "days": ["fri"], "start": "19:00", "end": "23:00" }
@@ -57,7 +57,7 @@ branches on where the data came from.
 | `dayEnd` | string `"HH:MM"` | paired¹ | `00:00`–`23:59`, must be > `dayStart` | `"23:30"` |
 | `sacrificePriority` | string[] | no | any strings | `[]` |
 
-¹ If you set either `dayStart` or `dayEnd` you must set both — this mirrors the "個天可排程的時間範圍" form, which saves them together as one preference.
+¹ If you set either `dayStart` or `dayEnd` you must set both — this mirrors the "Daily Schedulable Time Range" form, which saves them together as one preference.
 
 ### `protectedBlocks[]`
 
@@ -97,7 +97,7 @@ branches on where the data came from.
 | `completed` | boolean | no | `true`/`false` | `false` |
 
 **Note on `locationOptions`:** the form stores this as one comma-joined string
-(`"家裡, 圖書館"`) because it's a single text field; the JSON schema accepts an **array**
+(`"Home, Library"`) because it's a single text field; the JSON schema accepts an **array**
 instead (`["Library","Home"]`) because that's a cleaner interchange shape, and the importer
 joins it into the same comma-separated string internally — so a round-tripped task ends up
 byte-identical to one you'd get from typing `Library, Home` into the form. Export converts it
@@ -122,7 +122,7 @@ This is the actual testcase used to verify the feature (imported successfully en
   "preferences": {
     "dayStart": "08:00",
     "dayEnd": "22:00",
-    "sacrificePriority": ["optional 任務", "閱讀"]
+    "sacrificePriority": ["optional tasks", "reading"]
   },
   "protectedBlocks": [
     { "label": "Friday night off", "days": ["fri"], "start": "19:00", "end": "23:00" }
@@ -178,7 +178,8 @@ This is the actual testcase used to verify the feature (imported successfully en
   input, so it isn't part of a testcase. (Reset still clears the currently-displayed week's
   reflection doc, so a re-run starts clean; import does the same for the week it pins.)
 - **`weekStart` has no manual-UI counterpart.** The normal UI only ever moves relative to
-  today via ◀上週 / 本週 / 下週▶ (`state.weekOffset` against the real `new Date()`). Pinning
+  today via the Prev Week / This Week / Next Week buttons (`state.weekOffset` against the
+  real `new Date()`). Pinning
   an arbitrary week regardless of the real calendar date is a dev-tool-only capability
   (`state.pinnedWeekStart`) — that's the whole point of the field (§ "Planning Week" in the
   original request: V1 and V2 may run on different real-world dates but must render the same
@@ -191,7 +192,8 @@ This is the actual testcase used to verify the feature (imported successfully en
 - **Document ids.** Every `fixedEvents`/`tasks` doc gets a store-generated id (`db.collection(...).add()`
   mints one; the importer never sets one explicitly). The id becomes `taskId` on any calendar
   block the task produces, which is what lets the UI grey out a block (`.done`) when its task
-  is checked off, and what the master list's "已排" column uses to look up where a task landed.
+  is checked off, and what the master list's "Scheduled at" column uses to look up where a
+  task landed.
   Not meaningful to put in a testcase file — re-importing the same JSON twice will legitimately
   produce different ids, and that's fine.
 - **`state.weekOffset`.** Navigation position (prev/this/next), not data — reset to `0` by
