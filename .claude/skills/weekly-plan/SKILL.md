@@ -25,8 +25,34 @@ the tool itself changed (new field, different rule, different look).
 
 `app.en.html` is an English-UI twin of `app.html`, published as its own separate Artifact
 with its own database (not a language toggle on a shared instance — the two never share
-runtime state). Any change to `schedule()` or the data model needs to be made in both files
-to keep them behaviorally identical; only the user-facing text differs between them.
+runtime state).
+
+## Standing rule: every change ships to both language versions
+
+**From this point on, no change to this app is done until both `app.html` and
+`app.en.html` carry it.** This applies to every kind of change — a scheduling-logic fix, a
+new field, a new section, a CSS/layout tweak, a bug fix found while testing one version —
+not just user-visible features. The two files have no shared runtime, so nothing propagates
+automatically; skipping one half silently reintroduces the exact bug or gap the other half
+just fixed.
+
+Workflow for any change:
+
+1. Implement and verify the change in one file (either one — `app.html` is usually the
+   reference copy since it's the original).
+2. Port the identical change to the other file: same logic/markup/CSS edits, with only the
+   already-established English translations applied to any new or changed user-facing
+   string (extend the translation approach already used for the rest of the file — see the
+   git history for `app.en.html`'s initial translation for the mapping style/tone to match).
+3. Republish **both** Artifacts (pass each file's own `url` so both links and both
+   databases keep working) before considering the change done.
+4. If the change affects the data model (a new field, a renamed field, a new collection),
+   update `references/testcase-schema.md`, `testcase.json`/`testcase-example.json`, and
+   `acceptance-criteria.md` too — both language versions read the same JSON test-case shape,
+   so the schema doc and fixtures are shared, not duplicated per language.
+
+A change that only touches one file is not finished, even if that's the file the user
+happened to be looking at when they asked for it.
 
 ## What it decides vs. what the user decides
 
@@ -128,5 +154,8 @@ Import validates everything up front and loads nothing at all if any field is in
 - A fixed event or protected block whose own `start`/`end` falls outside
   `preferences.dayStart`–`dayEnd` can render clipped out of view (it doesn't go through the
   gap system that the day-window bounding relies on). See `acceptance-criteria.md` §A9.
+- A Must task with `repeatPerWeek > 1` only reports a shortfall for the first session that
+  fails to fit, not for every session that never got attempted after it — understates how
+  infeasible the testcase actually is. See `acceptance-criteria.md` §A11.
 - Dark theme and phone-width (~400px) rendering follow the Artifact contract's tokens but
   haven't actually been screenshotted/verified with real data.

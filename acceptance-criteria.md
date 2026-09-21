@@ -62,6 +62,14 @@ Each item is tagged with where to check it:
 - [ ] **A10 (new — recommended).** A task marked `completed: true` is excluded from the
       generated schedule (it still appears in the Master Task List, just with no calendar
       block). **[code]**
+- [ ] **A11 (new — recommended).** For a Must task with `repeatPerWeek > 1`, a shortfall is
+      reported for *every* session that couldn't be placed, not just the first one to fail.
+      **[code — known gap, found via a real testcase]** Today the placement loop `break`s
+      after the first failed session, so a task like "15×/week, only 1 session fits"
+      reports a shortfall the size of one missed session (e.g. "short 30 min"), not that 14
+      of 15 sessions never got attempted — understating the actual infeasibility. Surfaced by
+      importing real user data as `testcase.json` (a `repeatPerWeek: 15` task with an
+      already-past deadline); not yet fixed.
 
 ---
 

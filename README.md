@@ -73,8 +73,13 @@ error, never a partial load. Full field reference:
 
 ## Making changes
 
+> **Every change ships to both `app.html` and `app.en.html`.** They don't share code at
+> runtime — only by construction — so a fix applied to one and not the other quietly
+> reintroduces the bug in the other language. No change is done until both files carry it
+> and both Artifacts are republished. See `.claude/skills/weekly-plan/SKILL.md` for the
+> full workflow.
+
 Edit `app.html` (or `app.en.html`) directly (the scheduling logic is in the `schedule()`
-function; the input forms and their fields are plain HTML above it) and ask Claude to
-republish it to the same Artifact URL so your existing data and the link both keep working.
-A change to the scheduling logic itself needs to be made in **both** files to stay in sync —
-they don't share code at runtime, only by construction.
+function; the input forms and their fields are plain HTML above it), port the same edit to
+the other file (translating any new/changed user-facing text), and ask Claude to republish
+**both** to their own Artifact URLs so both links and both sets of stored data keep working.
