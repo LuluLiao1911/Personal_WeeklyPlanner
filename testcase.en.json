@@ -1,0 +1,30 @@
+{
+  "testCaseName": "Live Snapshot 2026-09-21 (EN)",
+  "weekStart": "2026-09-21",
+  "preferences": {
+    "dayStart": "07:30",
+    "dayEnd": "23:30",
+    "sacrificePriority": ["optional tasks", "reading", "social time", "exercise"]
+  },
+  "protectedBlocks": [
+    { "label": "Friday night off", "days": ["fri"], "start": "19:00", "end": "23:00" },
+    { "label": "Slow Sunday morning", "days": ["sun"], "start": "08:00", "end": "10:30" }
+  ],
+  "fixedEvents": [
+    { "name": "OS", "days": ["fri"], "start": "14:00", "end": "17:10", "location": "65405", "people": "" },
+    { "name": "Microprocessors", "days": ["wed"], "start": "09:00", "end": "12:00", "location": "65304", "people": "" },
+    { "name": "Asset Management", "days": ["thu"], "start": "08:00", "end": "09:00", "location": "80303", "people": "" },
+    { "name": "Volunteer Team - Post Office Transfer", "days": ["thu"], "start": "15:00", "end": "16:00", "location": "", "people": "" },
+    { "name": "Microprocessors Lab", "days": ["thu"], "start": "10:30", "end": "11:30", "location": "65203", "people": "" },
+    { "name": "Foster Care Meetup", "days": ["wed"], "start": "12:00", "end": "13:00", "location": "Foster Care", "people": "" },
+    { "name": "Spanish", "days": ["thu"], "start": "13:00", "end": "15:00", "location": "7206", "people": "" }
+  ],
+  "tasks": [
+    { "name": "PEOC lectures", "category": "must", "deadline": "2026-09-28T22:55", "estimatedMinutes": 60, "repeatPerWeek": 3, "splittable": true, "minBlockMinutes": 60, "timePreference": "any", "preferredDay": null, "locationOptions": [] },
+    { "name": "Exercise", "category": "want", "deadline": null, "estimatedMinutes": 45, "repeatPerWeek": 3, "splittable": false, "minBlockMinutes": 45, "timePreference": "evening", "preferredDay": null, "locationOptions": ["Gym", "Home"] },
+    { "name": "Asset Management Online Course", "category": "must", "deadline": "2026-09-21T08:00", "estimatedMinutes": 30, "repeatPerWeek": 15, "splittable": true, "minBlockMinutes": 30, "timePreference": "any", "preferredDay": null, "locationOptions": ["Home Library"] },
+    { "name": "Microprocessors Lab", "category": "must", "deadline": "2026-09-24T10:30", "estimatedMinutes": 240, "repeatPerWeek": 1, "splittable": true, "minBlockMinutes": 120, "timePreference": "any", "preferredDay": null, "locationOptions": ["Library Cafe"] },
+    { "name": "Reading", "category": "want", "deadline": null, "estimatedMinutes": 30, "repeatPerWeek": 2, "splittable": true, "minBlockMinutes": 30, "timePreference": "evening", "preferredDay": null, "locationOptions": ["anywhere"] },
+    { "name": "project", "category": "must", "deadline": "2026-10-02T10:00", "estimatedMinutes": 120, "repeatPerWeek": 3, "splittable": true, "minBlockMinutes": 120, "timePreference": "any", "preferredDay": null, "locationOptions": ["Home Library"] }
+  ]
+}

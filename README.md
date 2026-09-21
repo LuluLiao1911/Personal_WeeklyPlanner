@@ -56,9 +56,11 @@ app.en.html                             the same app, English UI (separate Artif
 
 ## Version testing
 
-`prompt.md` (a fresh-run test procedure) + `testcase.json` (its input) +
-`acceptance-criteria.md` (the pass/fail rubric to score the result against) together let you
-replay the same testcase across different versions of this planner and compare results.
+`prompt.md` (a fresh-run test procedure) + `testcase.json` / `testcase.en.json` (the same
+testcase's input, Chinese and English content, for `app.html` and `app.en.html`
+respectively) + `acceptance-criteria.md` (the pass/fail rubric to score the result against)
+together let you replay the same scenario across different versions of this planner — in
+either language — and compare results.
 
 ## Dev/test tools
 

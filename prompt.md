@@ -3,8 +3,9 @@
 ## Purpose
 
 This is the primary fresh-run test for Version 1 of the Weekly Planner (the `weekly-plan`
-Claude Artifact app, published at
-https://claude.ai/artifact/9KtMmdz6JLccGjGs4GrJFE, source in `app.html`).
+Claude Artifact app). Two language versions exist and should both be run: the Chinese UI,
+published at https://claude.ai/artifact/9KtMmdz6JLccGjGs4GrJFE (source `app.html`), and the
+English UI, at https://claude.ai/artifact/XRLUni3kdae8BHirFj62vs (source `app.en.html`).
 
 The goal is to evaluate whether the planner can transform a fixed set of weekly events,
 tasks, and scheduling constraints into a feasible and useful weekly schedule.
@@ -17,11 +18,13 @@ than filling every gap just because it exists.
 
 ## Test Input
 
-Use the supplied file:
+Use the supplied file matching the version under test:
 
-`testcase.json`
+`testcase.json` (Chinese content, for `app.html`) or `testcase.en.json` (the same testcase,
+English content, for `app.en.html`) — both encode the identical scenario, just translated,
+so results from either language are comparable.
 
-The JSON file contains:
+Each JSON file contains:
 
 - the fixed planning week (`weekStart`),
 - all fixed events,
@@ -43,7 +46,8 @@ schedule. Full field-by-field reference:
 2. Open the **Dev / Test Tools** panel at the bottom of the Input tab and click
    **Reset Planner Data** to clear any existing fixed events, tasks, preferences, protected
    blocks, and the current week's reflection notes. Confirm the dialog.
-3. Under **Import Test Case JSON**, choose `testcase.json`.
+3. Under **Import Test Case JSON**, choose `testcase.json` (or `testcase.en.json` on
+   `app.en.html`).
 4. Read the confirmation summary the panel shows (planning week, fixed event count, task
    count broken down by Must/Want/Optional, protected block count) and confirm it matches
    the testcase file exactly. If the panel instead shows a validation error, that error *is*
@@ -88,7 +92,8 @@ isn't limited to):
 
 This testcase should later be reused unchanged when testing Version 2.
 
-Version 2 must begin from a reset state and import the exact same `testcase.json`.
+Version 2 must begin from a reset state and import the same testcase file (matching
+language version).
 
 The comparison should therefore follow:
 
@@ -147,3 +152,7 @@ rubric this test's output is judged by.
   input each time; the only way to change the schedule is to change the input.
 - Location is never enforced as a hard constraint (no gap carries an inherited location) —
   see `references/algorithm.md`.
+- A Must task with `repeatPerWeek > 1` (both testcases include one) only reports a shortfall
+  for the first session that fails to place, not for every session left unattempted after
+  it — the summary can understate how infeasible the testcase actually is. See
+  `acceptance-criteria.md` §A11.

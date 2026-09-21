@@ -47,9 +47,14 @@ Workflow for any change:
 3. Republish **both** Artifacts (pass each file's own `url` so both links and both
    databases keep working) before considering the change done.
 4. If the change affects the data model (a new field, a renamed field, a new collection),
-   update `references/testcase-schema.md`, `testcase.json`/`testcase-example.json`, and
-   `acceptance-criteria.md` too — both language versions read the same JSON test-case shape,
-   so the schema doc and fixtures are shared, not duplicated per language.
+   update `references/testcase-schema.md` and `acceptance-criteria.md` too — the *schema*
+   is shared across both language versions, so it's documented once, not duplicated. The
+   *content* is per-language, though: `testcase.json` (Chinese data, for `app.html`) and
+   `testcase.en.json` (the same testcase translated, for `app.en.html`) both conform to that
+   one schema — keep them structurally identical (same tasks/events/deadlines/durations,
+   just translated names/labels) so a V1-vs-V2 comparison run on either language is still
+   comparing the same scenario. `references/testcase-example.json` is the schema doc's own
+   illustrative example and isn't tied to either language version.
 
 A change that only touches one file is not finished, even if that's the file the user
 happened to be looking at when they asked for it.
@@ -138,9 +143,10 @@ Import validates everything up front and loads nothing at all if any field is in
 - **Dev / Test Tools**: JSON import with full up-front validation and atomic replace (no
   partial loads), export, reset, and `weekStart` week-pinning for reproducible cross-version
   testing.
-- **Testing artifacts** (repo root): `prompt.md` (fresh-run test procedure),
-  `testcase.json` (its input), `acceptance-criteria.md` (the pass/fail rubric); schema
-  reference at `references/testcase-schema.md`.
+- **Testing artifacts** (repo root): `prompt.md` (fresh-run test procedure), `testcase.json`
+  / `testcase.en.json` (the same testcase, Chinese and English content, one per app language),
+  `acceptance-criteria.md` (the pass/fail rubric); schema reference at
+  `references/testcase-schema.md`.
 
 ### Not yet implemented / known gaps
 
