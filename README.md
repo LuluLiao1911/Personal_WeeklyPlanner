@@ -47,6 +47,12 @@ app.html                                the whole app (single file, published as
   references/style.md                   visual design notes
 ```
 
+## Version testing
+
+`prompt.md` (a fresh-run test procedure) + `testcase.json` (its input) +
+`acceptance-criteria.md` (the pass/fail rubric to score the result against) together let you
+replay the same testcase across different versions of this planner and compare results.
+
 ## Dev/test tools
 
 The Input tab has a collapsed "Dev / Test Tools" panel at the bottom — not the normal way to

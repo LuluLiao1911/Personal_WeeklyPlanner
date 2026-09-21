@@ -132,6 +132,9 @@ The run should produce:
 The actual result should be preserved even if some of these elements do not work correctly
 in Version 1.
 
+Score the preserved result against `acceptance-criteria.md` — that file is the pass/fail
+rubric this test's output is judged by.
+
 ---
 
 ## Known Version 1 scope (context for evaluating results, not excuses to wave away a finding)
