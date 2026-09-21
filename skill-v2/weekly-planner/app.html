@@ -1,0 +1,2479 @@
+<title>週間手帳</title>
+<style>
+  :root{
+    --bg:#EFEAD9;
+    --paper:#FBF8F0;
+    --paper-soft:#F3EEDD;
+    --ink:#3B3A32;
+    --ink-soft:#8B8874;
+    --line:#E4DFCB;
+    --sage:#7C9070;
+    --sage-dark:#5F7355;
+    --sage-fg:#FFFFFF;
+    --rose:#C2726B;
+    --rose-fg:#FFFFFF;
+    --mustard:#D9A441;
+    --mustard-fg:#3B2B08;
+    --blue:#6C87A0;
+    --blue-fg:#FFFFFF;
+    --free-line:#C9C2A8;
+    --free-fg:#9B9678;
+    --good:#5F7355;
+    --good-bg:#E7EEDF;
+    --warn:#B5583F;
+    --warn-bg:#F6E3DC;
+    --danger:#B5583F;
+    --shadow: 0 1px 2px rgba(59,58,50,.08), 0 10px 24px -16px rgba(59,58,50,.35);
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --bg:#20211B;
+      --paper:#282920;
+      --paper-soft:#303226;
+      --ink:#EDE9DC;
+      --ink-soft:#A6A288;
+      --line:#3C3E30;
+      --sage:#96AC89;
+      --sage-dark:#B4C6A8;
+      --sage-fg:#15180F;
+      --rose:#E0958E;
+      --rose-fg:#2B1210;
+      --mustard:#E8BE71;
+      --mustard-fg:#2E2007;
+      --blue:#96B4CC;
+      --blue-fg:#101B24;
+      --free-line:#545745;
+      --free-fg:#8B8874;
+      --good:#96AC89;
+      --good-bg:#232C1E;
+      --warn:#E0958E;
+      --warn-bg:#2E1E19;
+      --danger:#E0958E;
+      --shadow: 0 1px 2px rgba(0,0,0,.4), 0 12px 26px -16px rgba(0,0,0,.65);
+    }
+  }
+  :root[data-theme="dark"]{
+    --bg:#20211B; --paper:#282920; --paper-soft:#303226; --ink:#EDE9DC; --ink-soft:#A6A288;
+    --line:#3C3E30; --sage:#96AC89; --sage-dark:#B4C6A8; --sage-fg:#15180F;
+    --rose:#E0958E; --rose-fg:#2B1210; --mustard:#E8BE71; --mustard-fg:#2E2007;
+    --blue:#96B4CC; --blue-fg:#101B24; --free-line:#545745; --free-fg:#8B8874;
+    --good:#96AC89; --good-bg:#232C1E; --warn:#E0958E; --warn-bg:#2E1E19; --danger:#E0958E;
+    --shadow: 0 1px 2px rgba(0,0,0,.4), 0 12px 26px -16px rgba(0,0,0,.65);
+  }
+
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);font-family:"Noto Sans TC","PingFang TC","Microsoft JhengHei",system-ui,sans-serif;}
+  .page{max-width:1000px;margin:0 auto;padding:24px 16px 64px;display:flex;flex-direction:column;gap:18px;}
+
+  header.top{position:relative;padding:18px 20px 16px;background:var(--paper);border:1px solid var(--line);border-radius:18px;box-shadow:var(--shadow);overflow:hidden;}
+  header.top::before{content:"";position:absolute;left:-18px;top:-18px;width:110px;height:110px;background:var(--sage);opacity:.12;border-radius:50%;pointer-events:none;}
+  header.top::after{content:"";position:absolute;right:-24px;bottom:-26px;width:140px;height:140px;background:var(--mustard);opacity:.10;border-radius:50%;pointer-events:none;}
+  .sprig{position:absolute;top:10px;right:16px;width:46px;height:46px;opacity:.55;pointer-events:none;}
+  .top-inner{position:relative;display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:14px;}
+  h1{font-family:"Caveat",cursive;font-weight:700;font-size:clamp(30px,6vw,42px);margin:0;color:var(--sage-dark);letter-spacing:.01em;}
+  .subtitle{margin:2px 0 0;font-size:12.5px;color:var(--ink-soft);}
+  .tabs{display:flex;gap:8px;}
+  .tab-btn{
+    font-family:inherit;font-size:13.5px;font-weight:600;padding:9px 16px;border-radius:999px;
+    border:1.5px solid var(--sage);background:transparent;color:var(--sage-dark);cursor:pointer;
+  }
+  .tab-btn[aria-selected="true"]{background:var(--sage);color:var(--sage-fg);}
+
+  section[hidden]{display:none!important}
+
+  /* ---------- shared card ---------- */
+  .card{background:var(--paper);border:1px solid var(--line);border-radius:16px;padding:18px 18px 16px;box-shadow:var(--shadow);}
+  .card h2{font-family:"Caveat",cursive;font-size:23px;font-weight:700;margin:0 0 2px;color:var(--sage-dark);}
+  .card .hint{font-size:12px;color:var(--ink-soft);margin:0 0 12px;}
+
+  /* ---------- input tab ---------- */
+  .input-grid{display:flex;flex-direction:column;gap:16px;}
+  .row-list{list-style:none;margin:0 0 12px;padding:0;display:flex;flex-direction:column;gap:8px;}
+  .row-item{
+    display:flex;align-items:center;gap:10px;padding:9px 12px;border:1px solid var(--line);
+    border-radius:12px;background:var(--paper-soft);
+  }
+  .row-item .dot{width:9px;height:9px;border-radius:3px;flex:none}
+  .row-item .info{flex:1;min-width:0}
+  .row-item .info .name{font-size:13.5px;font-weight:600;display:block}
+  .row-item .info .meta{font-size:11.5px;color:var(--ink-soft);margin-top:2px}
+  .row-item .actions{display:flex;gap:6px;flex:none}
+  .icon-btn{
+    border:1px solid var(--line);background:var(--paper);color:var(--ink-soft);border-radius:8px;
+    width:28px;height:28px;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:13px;
+  }
+  .icon-btn:hover{color:var(--ink)}
+  .empty-note{font-size:12.5px;color:var(--ink-soft);padding:10px 2px;}
+
+  form.entry-form{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px 12px;padding:14px;border:1.5px dashed var(--free-line);border-radius:12px;background:var(--paper-soft);}
+  form.entry-form .field{display:flex;flex-direction:column;gap:4px;min-width:0}
+  form.entry-form .field.wide{grid-column:1/-1}
+  form.entry-form label{font-size:11px;color:var(--ink-soft);font-weight:600;}
+  form.entry-form input[type="text"],form.entry-form input[type="number"],form.entry-form input[type="time"],
+  form.entry-form input[type="date"],form.entry-form input[type="datetime-local"],form.entry-form select,form.entry-form textarea{
+    font-family:inherit;font-size:13px;padding:7px 9px;border:1px solid var(--line);border-radius:8px;
+    background:var(--paper);color:var(--ink);width:100%;
+  }
+  form.entry-form textarea{resize:vertical;min-height:36px}
+  .daypicker{display:flex;gap:4px;flex-wrap:wrap}
+  .daypicker label{
+    display:flex;align-items:center;justify-content:center;width:30px;height:30px;border-radius:8px;
+    border:1px solid var(--line);background:var(--paper);font-size:12px;font-weight:600;cursor:pointer;color:var(--ink-soft);
+  }
+  .daypicker input{display:none}
+  .daypicker input:checked + span{color:inherit}
+  .daypicker label:has(input:checked){background:var(--sage);border-color:var(--sage);color:var(--sage-fg)}
+  .checkline{display:flex;align-items:center;gap:6px;font-size:12.5px;color:var(--ink)}
+  .checkline input{width:16px;height:16px}
+  .form-actions{grid-column:1/-1;display:flex;gap:8px;justify-content:flex-end;margin-top:2px}
+  .btn{font-family:inherit;font-size:13px;font-weight:600;padding:8px 16px;border-radius:9px;border:1px solid var(--line);background:var(--paper);color:var(--ink);cursor:pointer;}
+  .btn.primary{background:var(--sage);border-color:var(--sage);color:var(--sage-fg)}
+  .btn.ghost{background:transparent;border-color:transparent;color:var(--ink-soft)}
+  .add-toggle{
+    display:inline-flex;align-items:center;gap:6px;font-size:12.5px;font-weight:600;color:var(--sage-dark);
+    background:transparent;border:none;cursor:pointer;padding:4px 0;
+  }
+
+  .prefs-sub{margin-top:14px;padding-top:14px;border-top:1px solid var(--line);}
+  .prefs-sub:first-child{margin-top:0;padding-top:0;border-top:none}
+  .prefs-sub h3{font-size:13.5px;margin:0 0 8px;color:var(--ink)}
+  .daytime-inline{display:flex;gap:12px;flex-wrap:wrap;align-items:flex-end;margin-bottom:12px}
+  .daytime-inline .field{display:flex;flex-direction:column;gap:4px}
+  .daytime-inline label{font-size:11px;color:var(--ink-soft);font-weight:600}
+  .daytime-inline input{font-family:inherit;font-size:13px;padding:7px 9px;border:1px solid var(--line);border-radius:8px;background:var(--paper);color:var(--ink)}
+
+  .priority-list{list-style:none;margin:0 0 10px;padding:0;display:flex;flex-direction:column;gap:6px}
+  .priority-list li{display:flex;align-items:center;gap:8px;padding:7px 10px;border:1px solid var(--line);border-radius:9px;background:var(--paper-soft);font-size:12.5px}
+  .priority-list li .num{width:18px;height:18px;border-radius:5px;background:var(--warn-bg);color:var(--warn);font-size:10.5px;font-weight:700;display:flex;align-items:center;justify-content:center;flex:none}
+  .priority-list li .txt{flex:1}
+  .priority-list li .mini{display:flex;gap:4px}
+  .priority-list li .mini button{width:22px;height:22px;font-size:11px;border-radius:6px;border:1px solid var(--line);background:var(--paper);cursor:pointer}
+
+  /* ---------- output tab ---------- */
+  .week-nav{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap}
+  .week-nav .range{font-family:"Caveat",cursive;font-size:20px;color:var(--ink-soft)}
+  .week-nav .navbtns{display:flex;gap:8px}
+  .legend{display:flex;flex-wrap:wrap;gap:10px 16px;margin-top:10px}
+  .legend-item{display:flex;align-items:center;gap:6px;font-size:11.5px;color:var(--ink-soft)}
+  .swatch{width:13px;height:13px;border-radius:4px;flex:none}
+  .swatch.fixed{background:var(--sage)}
+  .swatch.must{background:var(--rose)}
+  .swatch.want{background:var(--mustard)}
+  .swatch.optional{background:var(--mustard);opacity:.55}
+  .swatch.free{background:transparent;border:1.5px dashed var(--free-line)}
+
+  .summary{border-radius:12px;padding:12px 16px;font-size:13.5px;font-weight:500;display:flex;gap:8px;}
+  .summary.ok{background:var(--good-bg);color:var(--good);border:1px solid var(--good)}
+  .summary.warn{background:var(--warn-bg);color:var(--warn);border:1px solid var(--warn);flex-direction:column;gap:4px}
+  .summary.warn ul{margin:2px 0 0;padding-left:18px}
+
+  .calendar{display:flex;gap:6px;margin-top:14px;align-items:flex-start;overflow-x:auto;padding-bottom:4px;}
+  .axis{width:38px;position:relative;height:600px;flex:none;padding-top:38px;}
+  .axis .tick{position:absolute;right:2px;transform:translateY(-50%);font-size:10px;color:var(--ink-soft);font-variant-numeric:tabular-nums;}
+  .day-col{flex:1;min-width:104px;display:flex;flex-direction:column;}
+  .day-head{
+    background:var(--sage);color:var(--sage-fg);text-align:center;padding:6px 4px;border-radius:10px 10px 0 0;
+  }
+  .day-head .dow{font-family:"Caveat",cursive;font-size:17px;font-weight:700;display:block;line-height:1.1}
+  .day-head .date{font-size:10px;opacity:.9}
+  .day-col.today .day-head{background:var(--rose)}
+  .day-body{position:relative;height:600px;background:var(--paper);border:1px solid var(--line);border-top:none;overflow:hidden;}
+  .block{
+    position:absolute;left:3px;right:3px;border-radius:6px;font-size:10px;line-height:1.15;
+    padding:2px 4px;overflow:hidden;color:#fff;cursor:default;
+  }
+  .block.fixed{background:var(--sage)}
+  .block.must{background:var(--rose)}
+  .block.want{background:var(--mustard);color:var(--mustard-fg)}
+  .block.optional{background:var(--mustard);color:var(--mustard-fg);opacity:.55}
+  .block.free-protected{background:transparent;border:1.5px dashed var(--free-line);color:var(--free-fg)}
+  .block.done{opacity:.35;text-decoration:line-through}
+  .block .lbl{display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+
+  .master{margin-top:16px}
+  #task-list{list-style:none;margin:0;padding:0;display:flex;flex-direction:column}
+  .task-row{display:flex;align-items:center;gap:12px;padding:10px 0;border-top:1px solid var(--line)}
+  .task-row:first-child{border-top:none}
+  .check{width:22px;height:22px;border-radius:7px;border:2px solid var(--line);background:var(--paper-soft);flex:none;cursor:pointer;display:flex;align-items:center;justify-content:center;color:var(--good);font-size:14px;padding:0}
+  .check[aria-checked="true"]{background:var(--good-bg);border-color:var(--good)}
+  .task-body{flex:1;min-width:0}
+  .task-name{font-size:14px;font-weight:600;display:block}
+  .task-row.completed .task-name{color:var(--ink-soft);text-decoration:line-through}
+  .task-meta{display:flex;flex-wrap:wrap;gap:8px;margin-top:3px;font-size:11.5px;color:var(--ink-soft);font-variant-numeric:tabular-nums}
+  .pill{display:inline-flex;align-items:center;gap:4px;padding:2px 8px;border-radius:999px;font-size:10.5px;font-weight:700}
+  .pill.must{background:var(--rose);color:var(--rose-fg)}
+  .pill.want{background:var(--mustard);color:var(--mustard-fg)}
+  .pill.optional{background:var(--paper-soft);color:var(--ink-soft);border:1px solid var(--line)}
+  .pill.overdue{background:var(--warn-bg);color:var(--warn);border:1px solid var(--warn)}
+
+  .freetime-row{display:flex;align-items:center;gap:12px;padding:10px 0;border-top:1px solid var(--line)}
+  .freetime-row:first-child{border-top:none}
+  .freetime-row .when{width:150px;flex:none;font-size:13px;font-weight:600}
+  .freetime-row .dur{font-size:11.5px;color:var(--ink-soft);width:64px;flex:none;font-variant-numeric:tabular-nums}
+  .freetime-row .ideas{font-size:12.5px;color:var(--ink-soft);flex:1}
+
+  .reflect-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px}
+  .reflect-field{display:flex;flex-direction:column;gap:4px}
+  .reflect-field.wide{grid-column:1/-1}
+  .reflect-field label{font-size:11.5px;font-weight:600;color:var(--ink-soft)}
+  .reflect-field textarea{
+    font-family:inherit;font-size:13px;padding:9px 10px;border:1px solid var(--line);border-radius:10px;
+    background:var(--paper-soft);color:var(--ink);min-height:64px;resize:vertical;
+  }
+
+  /* ---------- dev/test tools ---------- */
+  details.dev{
+    margin-top:8px;border:1.5px dashed var(--free-line);border-radius:14px;background:var(--paper-soft);
+  }
+  details.dev > summary{
+    cursor:pointer;padding:12px 16px;font-size:12.5px;font-weight:700;color:var(--ink-soft);
+    letter-spacing:.03em;text-transform:uppercase;list-style:none;display:flex;align-items:center;gap:6px;
+  }
+  details.dev > summary::before{content:"\1F6E0";font-size:12px}
+  details.dev > summary::-webkit-details-marker{display:none}
+  .dev-body{padding:0 16px 16px;display:flex;flex-direction:column;gap:14px;font-family:ui-monospace,"SF Mono",Menlo,Consolas,monospace;}
+  .dev-body .hint{font-family:"Noto Sans TC",system-ui,sans-serif}
+  .dev-row{display:flex;flex-wrap:wrap;align-items:center;gap:8px}
+  .dev-row label{font-size:11px;color:var(--ink-soft);font-weight:600;width:100%;font-family:"Noto Sans TC",system-ui,sans-serif}
+  .dev-row input[type="text"], .dev-row input[type="file"]{
+    font-family:inherit;font-size:12.5px;padding:7px 9px;border:1px solid var(--line);border-radius:8px;
+    background:var(--paper);color:var(--ink);flex:1;min-width:160px;
+  }
+  .dev-status{
+    font-size:12px;white-space:pre-wrap;padding:10px 12px;border-radius:10px;border:1px solid var(--line);
+    background:var(--paper);
+  }
+  .dev-status.ok{border-color:var(--good);color:var(--good);background:var(--good-bg)}
+  .dev-status.err{border-color:var(--warn);color:var(--warn);background:var(--warn-bg)}
+  .dev-schema pre{
+    font-size:11px;line-height:1.5;background:var(--paper);border:1px solid var(--line);border-radius:10px;
+    padding:12px;overflow-x:auto;white-space:pre;
+  }
+  .btn.danger{border-color:var(--warn);color:var(--warn);background:transparent}
+
+  footer.note{font-size:11px;color:var(--ink-soft);text-align:center;padding-top:4px}
+
+  /* ---------- language toggle ---------- */
+  .lang-toggle{display:flex;border:1.5px solid var(--sage);border-radius:999px;overflow:hidden;flex:none}
+  .lang-toggle button{
+    font-family:inherit;font-size:12px;font-weight:700;padding:7px 12px;border:none;background:transparent;
+    color:var(--sage-dark);cursor:pointer;
+  }
+  .lang-toggle button[aria-pressed="true"]{background:var(--sage);color:var(--sage-fg)}
+
+  /* ---------- V2: movable / locked / manual blocks ---------- */
+  .block.movable{cursor:grab;touch-action:none}
+  .block.movable:hover{outline:1.5px solid rgba(255,255,255,.7)}
+  .block.dragging{cursor:grabbing;opacity:.9;box-shadow:0 10px 22px rgba(0,0,0,.3);z-index:60}
+  .block.locked{cursor:not-allowed}
+  .block.locked::after{
+    content:"\1F512";position:absolute;top:2px;right:3px;font-size:8px;opacity:.75;line-height:1;
+  }
+  .block.manual{box-shadow:inset 0 0 0 2px rgba(255,255,255,.85)}
+  .block.manual .adj-badge{
+    position:absolute;top:2px;right:3px;font-size:8px;background:rgba(255,255,255,.9);color:var(--ink);
+    border-radius:4px;padding:0 3px;line-height:1.3;font-weight:700;
+  }
+  .block.conflict{outline:2px solid var(--warn);outline-offset:-2px}
+  .drop-ghost{
+    position:absolute;left:3px;right:3px;border-radius:6px;border:2px dashed var(--sage-dark);
+    background:rgba(124,144,112,.18);pointer-events:none;z-index:55;
+  }
+  .drop-ghost.invalid{border-color:var(--warn);background:rgba(181,88,63,.15)}
+  .drag-toast{
+    position:fixed;left:50%;bottom:24px;transform:translateX(-50%);background:var(--warn);color:#fff;
+    font-size:12.5px;font-weight:600;padding:9px 16px;border-radius:10px;box-shadow:var(--shadow);z-index:200;
+    max-width:88vw;text-align:center;
+  }
+
+  /* ---------- V2: block detail popover ---------- */
+  .block-popover-backdrop{
+    position:fixed;inset:0;background:rgba(0,0,0,.25);z-index:150;display:flex;align-items:center;justify-content:center;padding:16px;
+  }
+  .block-popover-backdrop[hidden]{display:none}
+  .block-popover{
+    background:var(--paper);border-radius:14px;box-shadow:var(--shadow);padding:18px;max-width:340px;width:100%;
+    display:flex;flex-direction:column;gap:10px;
+  }
+  .block-popover h3{margin:0;font-family:"Caveat",cursive;font-size:20px;color:var(--sage-dark)}
+  .block-popover .kv{display:flex;justify-content:space-between;gap:10px;font-size:12.5px;color:var(--ink-soft)}
+  .block-popover .kv[hidden]{display:none}
+  .block-popover .kv b{color:var(--ink);font-weight:600}
+  .block-popover .edit-row{display:flex;gap:8px;align-items:center;margin-top:4px}
+  .block-popover .edit-row select,.block-popover .edit-row input{
+    font-family:inherit;font-size:13px;padding:6px 8px;border:1px solid var(--line);border-radius:8px;background:var(--paper-soft);color:var(--ink);
+  }
+  .block-popover .actions{display:flex;justify-content:flex-end;gap:8px;margin-top:6px}
+
+  @media (max-width:620px){
+    .calendar{gap:3px}
+    .day-col{min-width:76px}
+    .axis{width:30px}
+  }
+</style>
+
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;600;700&family=Caveat:wght@600;700&display=swap">
+
+<div class="page">
+  <header class="top">
+    <svg class="sprig" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M32 60C30 40 30 20 34 4" stroke="var(--sage-dark)" stroke-width="2" stroke-linecap="round"/>
+      <ellipse cx="24" cy="22" rx="9" ry="5" transform="rotate(-35 24 22)" fill="var(--sage)"/>
+      <ellipse cx="40" cy="14" rx="9" ry="5" transform="rotate(30 40 14)" fill="var(--sage)"/>
+      <ellipse cx="22" cy="40" rx="8" ry="4.5" transform="rotate(-30 22 40)" fill="var(--sage)" opacity=".8"/>
+      <ellipse cx="42" cy="34" rx="8" ry="4.5" transform="rotate(28 42 34)" fill="var(--sage)" opacity=".8"/>
+    </svg>
+    <div class="top-inner">
+      <div>
+        <h1 data-i18n="app.title">週間手帳</h1>
+        <p class="subtitle" data-i18n="app.subtitle">固定行程・任務・偏好都在這裡輸入，週計畫自動排好</p>
+      </div>
+      <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+        <div class="lang-toggle" role="group" aria-label="Language">
+          <button type="button" id="lang-zh" aria-pressed="true">中文</button>
+          <button type="button" id="lang-en" aria-pressed="false">English</button>
+        </div>
+        <div class="tabs" role="tablist">
+          <button class="tab-btn" id="tab-btn-input" role="tab" aria-selected="true" aria-controls="tab-input" data-i18n="tabs.input">輸入資料</button>
+          <button class="tab-btn" id="tab-btn-output" role="tab" aria-selected="false" aria-controls="tab-output" data-i18n="tabs.output">本週計畫</button>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- ============ INPUT TAB ============ -->
+  <section id="tab-input" class="input-grid">
+
+    <div class="card">
+      <h2 data-i18n="fixed.title">固定行程</h2>
+      <p class="hint" data-i18n="fixed.hint">上課、上班、通勤、會議這類不會動的時段。</p>
+      <ul class="row-list" id="fixed-list"></ul>
+      <button class="add-toggle" data-toggle="fixed-form" data-i18n="fixed.add">＋ 新增固定行程</button>
+      <form class="entry-form" id="fixed-form" hidden>
+        <input type="hidden" id="fixed-edit-id" value="">
+        <div class="field wide">
+          <label for="fixed-name" data-i18n="fixed.name">名稱</label>
+          <input type="text" id="fixed-name" required placeholder="例如：課程 A" data-i18n-ph="fixed.namePh">
+        </div>
+        <div class="field wide">
+          <label data-i18n="common.days">星期</label>
+          <div class="daypicker" id="fixed-days">
+            <label><input type="checkbox" value="mon"><span data-i18n="day.mon">一</span></label>
+            <label><input type="checkbox" value="tue"><span data-i18n="day.tue">二</span></label>
+            <label><input type="checkbox" value="wed"><span data-i18n="day.wed">三</span></label>
+            <label><input type="checkbox" value="thu"><span data-i18n="day.thu">四</span></label>
+            <label><input type="checkbox" value="fri"><span data-i18n="day.fri">五</span></label>
+            <label><input type="checkbox" value="sat"><span data-i18n="day.sat">六</span></label>
+            <label><input type="checkbox" value="sun"><span data-i18n="day.sun">日</span></label>
+          </div>
+        </div>
+        <div class="field"><label for="fixed-start" data-i18n="fixed.start">開始時間</label><input type="time" id="fixed-start" lang="zh-TW" required></div>
+        <div class="field"><label for="fixed-end" data-i18n="fixed.end">結束時間</label><input type="time" id="fixed-end" lang="zh-TW" required></div>
+        <div class="field"><label for="fixed-location" data-i18n="fixed.location">地點</label><input type="text" id="fixed-location" placeholder="教室 301" data-i18n-ph="fixed.locationPh"></div>
+        <div class="field"><label for="fixed-people" data-i18n="fixed.people">相關的人</label><input type="text" id="fixed-people" placeholder="主管、team" data-i18n-ph="fixed.peoplePh"></div>
+        <div class="form-actions">
+          <button type="button" class="btn ghost" data-cancel="fixed-form" data-i18n="common.cancel">取消</button>
+          <button type="submit" class="btn primary" id="fixed-submit" data-i18n="common.add">新增</button>
+        </div>
+      </form>
+    </div>
+
+    <div class="card">
+      <h2 data-i18n="task.title">任務</h2>
+      <p class="hint" data-i18n="task.hint">Must / Want / Optional 由你自己判斷 — 這是你的優先順序,不是系統幫你決定的。</p>
+      <ul class="row-list" id="task-input-list"></ul>
+      <button class="add-toggle" data-toggle="task-form" data-i18n="task.add">＋ 新增任務</button>
+      <form class="entry-form" id="task-form" hidden>
+        <input type="hidden" id="task-edit-id" value="">
+        <div class="field wide">
+          <label for="task-name" data-i18n="task.name">任務名稱</label>
+          <input type="text" id="task-name" required placeholder="例如：期末報告草稿" data-i18n-ph="task.namePh">
+        </div>
+        <div class="field">
+          <label for="task-category" data-i18n="task.category">分類</label>
+          <select id="task-category">
+            <option value="must" data-i18n="task.catMust">Must（一定要完成）</option>
+            <option value="want" data-i18n="task.catWant">Want（想固定維持）</option>
+            <option value="optional" data-i18n="task.catOptional">Optional（有空再做）</option>
+          </select>
+        </div>
+        <div class="field"><label for="task-deadline" data-i18n="task.deadline">截止時間（可留空）</label><input type="datetime-local" id="task-deadline" lang="zh-TW"></div>
+        <div class="field"><label for="task-minutes" data-i18n="task.minutes">單次預估時間（分鐘）</label><input type="number" id="task-minutes" min="5" step="5" required placeholder="240"></div>
+        <div class="field"><label for="task-repeat" data-i18n="task.repeat">每週次數</label><input type="number" id="task-repeat" min="1" step="1" value="1"></div>
+        <div class="field">
+          <label for="task-pref" data-i18n="task.pref">時段偏好</label>
+          <select id="task-pref">
+            <option value="any" data-i18n="common.any">不限</option>
+            <option value="morning" data-i18n="common.morning">早上</option>
+            <option value="afternoon" data-i18n="common.afternoon">下午</option>
+            <option value="evening" data-i18n="common.evening">晚上</option>
+          </select>
+        </div>
+        <div class="field">
+          <label for="task-day" data-i18n="task.day">指定星期（可留空）</label>
+          <select id="task-day">
+            <option value="" data-i18n="common.any">不限</option>
+            <option value="mon" data-i18n="day.mon">一</option>
+            <option value="tue" data-i18n="day.tue">二</option>
+            <option value="wed" data-i18n="day.wed">三</option>
+            <option value="thu" data-i18n="day.thu">四</option>
+            <option value="fri" data-i18n="day.fri">五</option>
+            <option value="sat" data-i18n="day.sat">六</option>
+            <option value="sun" data-i18n="day.sun">日</option>
+          </select>
+        </div>
+        <div class="field"><label for="task-minblock" data-i18n="task.minblock">最小可用時段（分鐘）</label><input type="number" id="task-minblock" min="5" step="5" placeholder="45"></div>
+        <div class="field wide"><label for="task-location" data-i18n="task.location">地點需求（逗號分隔，或填 anywhere）</label><input type="text" id="task-location" placeholder="家裡, 圖書館" data-i18n-ph="task.locationPh"></div>
+        <div class="field wide">
+          <label class="checkline"><input type="checkbox" id="task-splittable" checked> <span data-i18n="task.splittable">可以拆成多段完成</span></label>
+        </div>
+        <div class="field wide"><label for="task-notes" data-i18n="task.notes">備註</label><textarea id="task-notes" placeholder="其他補充" data-i18n-ph="task.notesPh"></textarea></div>
+        <div class="form-actions">
+          <button type="button" class="btn ghost" data-cancel="task-form" data-i18n="common.cancel">取消</button>
+          <button type="submit" class="btn primary" id="task-submit" data-i18n="common.add">新增</button>
+        </div>
+      </form>
+    </div>
+
+    <div class="card">
+      <h2 data-i18n="prefs.title">偏好設定</h2>
+      <p class="hint" data-i18n="prefs.hint">這些是你自己的決定 — AI 只會照著排，不會自己決定要保留哪些時段或犧牲什麼。</p>
+
+      <div class="prefs-sub">
+        <h3 data-i18n="prefs.dailyRange">每天可排程的時間範圍</h3>
+        <div class="daytime-inline">
+          <div class="field"><label for="pref-daystart" data-i18n="common.start">開始</label><input type="time" id="pref-daystart" lang="zh-TW" value="07:30"></div>
+          <div class="field"><label for="pref-dayend" data-i18n="common.end">結束</label><input type="time" id="pref-dayend" lang="zh-TW" value="23:30"></div>
+          <button class="btn primary" id="pref-daytime-save" type="button" data-i18n="common.save">儲存</button>
+        </div>
+      </div>
+
+      <div class="prefs-sub">
+        <h3 data-i18n="prefs.protected">保護時段（無論如何都保留）</h3>
+        <ul class="row-list" id="protected-list"></ul>
+        <button class="add-toggle" data-toggle="protected-form" data-i18n="prefs.protectedAdd">＋ 新增保護時段</button>
+        <form class="entry-form" id="protected-form" hidden>
+          <input type="hidden" id="protected-edit-id" value="">
+          <div class="field wide"><label for="protected-label" data-i18n="fixed.name">名稱</label><input type="text" id="protected-label" required placeholder="週五晚上放空" data-i18n-ph="prefs.protectedNamePh"></div>
+          <div class="field wide">
+            <label data-i18n="common.days">星期</label>
+            <div class="daypicker" id="protected-days">
+              <label><input type="checkbox" value="mon"><span data-i18n="day.mon">一</span></label>
+              <label><input type="checkbox" value="tue"><span data-i18n="day.tue">二</span></label>
+              <label><input type="checkbox" value="wed"><span data-i18n="day.wed">三</span></label>
+              <label><input type="checkbox" value="thu"><span data-i18n="day.thu">四</span></label>
+              <label><input type="checkbox" value="fri"><span data-i18n="day.fri">五</span></label>
+              <label><input type="checkbox" value="sat"><span data-i18n="day.sat">六</span></label>
+              <label><input type="checkbox" value="sun"><span data-i18n="day.sun">日</span></label>
+            </div>
+          </div>
+          <div class="field"><label for="protected-start" data-i18n="common.start">開始</label><input type="time" id="protected-start" lang="zh-TW" required></div>
+          <div class="field"><label for="protected-end" data-i18n="common.end">結束</label><input type="time" id="protected-end" lang="zh-TW" required></div>
+          <div class="form-actions">
+            <button type="button" class="btn ghost" data-cancel="protected-form" data-i18n="common.cancel">取消</button>
+            <button type="submit" class="btn primary" id="protected-submit" data-i18n="common.add">新增</button>
+          </div>
+        </form>
+      </div>
+
+      <div class="prefs-sub">
+        <p class="hint" style="margin:0" data-i18n="prefs.recurringNote">想固定維持的活動（運動、閱讀…）直接在左邊「任務」新增，分類選 Want、截止時間留空、填「每週次數」即可 — 不用在這裡重複設定。</p>
+      </div>
+
+      <div class="prefs-sub">
+        <h3 data-i18n="prefs.priority">時間不夠時,犧牲順序（由上而下先犧牲）</h3>
+        <p class="hint" style="margin-bottom:8px" data-i18n="prefs.priorityHint">must 任務與保護時段永遠不在這個清單裡。</p>
+        <ul class="priority-list" id="priority-list"></ul>
+        <div style="display:flex;gap:8px">
+          <input type="text" id="priority-new" placeholder="輸入項目,例如：閱讀" data-i18n-ph="prefs.priorityPh" style="flex:1;font-family:inherit;font-size:13px;padding:7px 9px;border:1px solid var(--line);border-radius:8px;background:var(--paper);color:var(--ink)">
+          <button class="btn primary" id="priority-add" type="button" data-i18n="common.add">新增</button>
+        </div>
+      </div>
+    </div>
+
+    <details class="dev">
+      <summary data-i18n="dev.title">開發 / 測試工具（Dev &amp; Test Tools）</summary>
+      <div class="dev-body">
+        <p class="hint" data-i18n="dev.hint">給版本間可重現測試用的額外工具，不是一般使用流程 — 平常請照左邊表單操作。匯入測試案例會用 JSON 內容整批覆蓋固定行程／任務／偏好／保護時段，並把「本週計畫」鎖定在 JSON 指定的那一週，這樣不同版本的排程器可以在完全相同的輸入下比較輸出。</p>
+
+        <div class="dev-row">
+          <label for="dev-import-file" data-i18n="dev.importLabel">匯入測試案例 JSON（Import Test Case JSON）</label>
+          <input type="file" id="dev-import-file" accept=".json,application/json">
+        </div>
+        <div id="dev-import-status" class="dev-status" hidden></div>
+
+        <div class="dev-row">
+          <label for="dev-export-name" data-i18n="dev.exportNameLabel">匯出用的測試案例名稱（選填）</label>
+          <input type="text" id="dev-export-name" placeholder="Main Weekly Planner Test">
+        </div>
+        <div class="dev-row">
+          <button type="button" class="btn primary" id="dev-export-btn" data-i18n="dev.exportBtn">⬇ 匯出目前輸入為 JSON</button>
+          <button type="button" class="btn danger" id="dev-reset-btn" data-i18n="dev.resetBtn">⟲ 重置 Planner 資料（Reset Planner Data）</button>
+        </div>
+        <p class="hint" data-i18n="dev.resetHint">重置會清空固定行程、任務、偏好設定、保護時段、目前顯示週的回顧筆記，並解除鎖定週，回到即時的本週。此動作無法復原。</p>
+
+        <details class="dev-schema">
+          <summary style="cursor:pointer;font-size:12px;color:var(--ink-soft);font-family:'Noto Sans TC',system-ui,sans-serif" data-i18n="dev.schemaTitle">JSON 格式說明（欄位、必填/選填、預設值）</summary>
+          <pre id="dev-schema-example"></pre>
+        </details>
+      </div>
+    </details>
+  </section>
+
+  <!-- ============ OUTPUT TAB ============ -->
+  <section id="tab-output" hidden>
+    <div class="card" id="pdf-page1">
+      <div class="week-nav">
+        <div>
+          <span class="range" id="week-range">–</span>
+        </div>
+        <div class="navbtns" data-nopdf="1">
+          <button class="btn" id="week-prev" data-i18n="output.prevWeek">◀ 上週</button>
+          <button class="btn" id="week-this" data-i18n="output.thisWeek">本週</button>
+          <button class="btn" id="week-next" data-i18n="output.nextWeek">下週 ▶</button>
+          <button class="btn primary" id="pdf-download" data-i18n="output.pdfBtn">⬇ 下載本週 PDF</button>
+        </div>
+      </div>
+      <div class="legend">
+        <span class="legend-item"><span class="swatch fixed"></span><span data-i18n="legend.fixed">固定行程</span></span>
+        <span class="legend-item"><span class="swatch must"></span><span data-i18n="legend.must">! Must</span></span>
+        <span class="legend-item"><span class="swatch want"></span><span data-i18n="legend.want">♥ Want</span></span>
+        <span class="legend-item"><span class="swatch optional"></span><span data-i18n="legend.optional">· Optional</span></span>
+        <span class="legend-item"><span class="swatch free"></span><span data-i18n="legend.free">保護 / 自由時段</span></span>
+        <span class="legend-item"><span style="font-size:9px">&#128274;</span><span data-i18n="legend.locked">固定不可移動</span></span>
+      </div>
+
+      <div class="summary ok" id="summary" style="margin-top:14px">🎉 沒有排不進去的事項。</div>
+
+      <div class="navbtns" data-nopdf="1" style="margin-top:10px">
+        <button class="btn" id="undo-move-btn" data-i18n="output.undoBtn" disabled>&#8630; 復原上一步</button>
+        <button class="btn" id="reset-schedule-btn" data-i18n="output.resetScheduleBtn" disabled>&#10226; 還原成系統排程</button>
+        <span class="hint" id="manual-hint" data-i18n="output.dragHint" style="align-self:center">拖曳任務方塊可手動調整時間；點一下可查看/編輯細節。</span>
+      </div>
+
+      <div class="calendar" id="calendar"></div>
+    </div>
+
+    <div id="pdf-page2">
+      <div class="card master">
+        <h2 data-i18n="master.title">任務總表</h2>
+        <p class="hint" data-i18n="master.hint">依截止日期排序，勾選代表完成 — 完成的任務不會再被排入行事曆。</p>
+        <ul id="task-list"></ul>
+      </div>
+
+      <div class="card master" style="margin-top:16px">
+        <h2 data-i18n="freetime.title">自由時段建議</h2>
+        <p class="hint" data-i18n="freetime.hint">這些時段沒有被排入任何事項 — 只是建議，真正要不要用來做什麼由你決定。</p>
+        <ul id="freetime-list"></ul>
+      </div>
+
+      <div class="card master" style="margin-top:16px">
+        <h2 data-i18n="reflect.title">本週回顧</h2>
+        <p class="hint" data-i18n="reflect.hint">隨時記幾句都可以，會自動保存。</p>
+        <div class="reflect-grid">
+          <div class="reflect-field"><label for="reflect-wins" data-i18n="reflect.wins">這週做到的事</label><textarea id="reflect-wins" data-key="wins" placeholder="這週的收穫、完成的事…" data-i18n-ph="reflect.winsPh"></textarea></div>
+          <div class="reflect-field"><label for="reflect-unfinished" data-i18n="reflect.unfinished">沒完成的事</label><textarea id="reflect-unfinished" data-key="unfinished" placeholder="還留著的、往後延的…" data-i18n-ph="reflect.unfinishedPh"></textarea></div>
+          <div class="reflect-field"><label for="reflect-longer" data-i18n="reflect.longer">花的時間比預期久</label><textarea id="reflect-longer" data-key="longer" placeholder="低估時間的地方…" data-i18n-ph="reflect.longerPh"></textarea></div>
+          <div class="reflect-field"><label for="reflect-change" data-i18n="reflect.change">下週想調整</label><textarea id="reflect-change" data-key="change" placeholder="下週想試試看的調整…" data-i18n-ph="reflect.changePh"></textarea></div>
+          <div class="reflect-field wide"><label for="reflect-notes" data-i18n="reflect.notes">其他筆記</label><textarea id="reflect-notes" data-key="notes" placeholder="任何補充" data-i18n-ph="reflect.notesPh"></textarea></div>
+        </div>
+      </div>
+    </div>
+
+    <footer class="note" data-i18n="footer.note">由 weekly-plan 排程引擎於瀏覽器端即時計算，任何資料變動都會自動重排。</footer>
+  </section>
+</div>
+
+<div class="block-popover-backdrop" id="block-popover-backdrop" hidden>
+  <div class="block-popover" id="block-popover" role="dialog" aria-modal="true">
+    <h3 id="bp-name"></h3>
+    <div class="kv"><span data-i18n="popover.category">分類</span><b id="bp-category"></b></div>
+    <div class="kv"><span data-i18n="popover.scheduled">目前時間</span><b id="bp-scheduled"></b></div>
+    <div class="kv"><span data-i18n="popover.duration">時長</span><b id="bp-duration"></b></div>
+    <div class="kv" id="bp-deadline-row"><span data-i18n="task.deadline2">截止</span><b id="bp-deadline"></b></div>
+    <div class="kv" id="bp-origin-row"><span data-i18n="popover.origin">來源</span><b id="bp-origin"></b></div>
+    <div class="edit-row">
+      <select id="bp-day-select"></select>
+      <input type="time" id="bp-time-input" lang="zh-TW" step="900">
+    </div>
+    <div id="bp-error" class="hint" style="color:var(--warn)"></div>
+    <div class="actions">
+      <button type="button" class="btn ghost" id="bp-close" data-i18n="common.close">關閉</button>
+      <button type="button" class="btn primary" id="bp-save" data-i18n="common.save">儲存</button>
+    </div>
+  </div>
+</div>
+
+<script>
+(function(){
+  "use strict";
+
+  /* ---------------- constants ---------------- */
+  var DAY_KEYS = ["mon","tue","wed","thu","fri","sat","sun"];
+  var CATEGORY_ORDER = {must:0, want:1, optional:2};
+
+  /* ---------------- i18n (V2) ----------------
+     UI chrome only. User-entered data (task/event names, locations, people, notes) is
+     never routed through this — it's inserted verbatim via esc() wherever it's used, so
+     switching language never touches it. */
+  var I18N = {
+    zh: {
+      "app.title":"週間手帳", "app.subtitle":"固定行程・任務・偏好都在這裡輸入，週計畫自動排好",
+      "tabs.input":"輸入資料", "tabs.output":"本週計畫",
+      "common.add":"新增", "common.cancel":"取消", "common.save":"儲存", "common.close":"關閉",
+      "common.start":"開始", "common.end":"結束", "common.days":"星期", "common.any":"不限",
+      "common.morning":"早上", "common.afternoon":"下午", "common.evening":"晚上", "common.none":"無",
+      "common.edit":"編輯", "common.delete":"刪除", "common.update":"更新",
+      "day.mon":"一","day.tue":"二","day.wed":"三","day.thu":"四","day.fri":"五","day.sat":"六","day.sun":"日",
+      "fixed.title":"固定行程", "fixed.hint":"上課、上班、通勤、會議這類不會動的時段。",
+      "fixed.add":"＋ 新增固定行程", "fixed.name":"名稱", "fixed.namePh":"例如：課程 A",
+      "fixed.start":"開始時間", "fixed.end":"結束時間", "fixed.location":"地點", "fixed.locationPh":"教室 301",
+      "fixed.people":"相關的人", "fixed.peoplePh":"主管、team", "fixed.empty":"還沒有固定行程。",
+      "task.title":"任務", "task.hint":"Must / Want / Optional 由你自己判斷 — 這是你的優先順序,不是系統幫你決定的。",
+      "task.add":"＋ 新增任務", "task.name":"任務名稱", "task.namePh":"例如：期末報告草稿",
+      "task.category":"分類", "task.catMust":"Must（一定要完成）", "task.catWant":"Want（想固定維持）", "task.catOptional":"Optional（有空再做）",
+      "task.deadline":"截止時間（可留空）", "task.deadline2":"截止", "task.minutes":"單次預估時間（分鐘）",
+      "task.repeat":"每週次數", "task.pref":"時段偏好", "task.day":"指定星期（可留空）",
+      "task.minblock":"最小可用時段（分鐘）", "task.location":"地點需求（逗號分隔，或填 anywhere）", "task.locationPh":"家裡, 圖書館",
+      "task.splittable":"可以拆成多段完成", "task.notes":"備註", "task.notesPh":"其他補充", "task.empty":"還沒有任務。",
+      "task.repeatSuffix":"× 每週 {n} 次",
+      "prefs.title":"偏好設定", "prefs.hint":"這些是你自己的決定 — AI 只會照著排，不會自己決定要保留哪些時段或犧牲什麼。",
+      "prefs.dailyRange":"每天可排程的時間範圍", "prefs.protected":"保護時段（無論如何都保留）",
+      "prefs.protectedAdd":"＋ 新增保護時段", "prefs.protectedNamePh":"週五晚上放空", "prefs.protectedEmpty":"還沒有保護時段。",
+      "prefs.recurringNote":"想固定維持的活動（運動、閱讀…）直接在左邊「任務」新增，分類選 Want、截止時間留空、填「每週次數」即可 — 不用在這裡重複設定。",
+      "prefs.priority":"時間不夠時,犧牲順序（由上而下先犧牲）", "prefs.priorityHint":"must 任務與保護時段永遠不在這個清單裡。",
+      "prefs.priorityPh":"輸入項目,例如：閱讀", "prefs.priorityEmpty":"還沒有項目。",
+      "dev.title":"開發 / 測試工具（Dev & Test Tools）",
+      "dev.hint":"給版本間可重現測試用的額外工具，不是一般使用流程 — 平常請照左邊表單操作。匯入測試案例會用 JSON 內容整批覆蓋固定行程／任務／偏好／保護時段，並把「本週計畫」鎖定在 JSON 指定的那一週，這樣不同版本的排程器可以在完全相同的輸入下比較輸出。",
+      "dev.importLabel":"匯入測試案例 JSON（Import Test Case JSON）", "dev.exportNameLabel":"匯出用的測試案例名稱（選填）",
+      "dev.exportBtn":"⬇ 匯出目前輸入為 JSON", "dev.resetBtn":"⟲ 重置 Planner 資料（Reset Planner Data）",
+      "dev.resetHint":"重置會清空固定行程、任務、偏好設定、保護時段、目前顯示週的回顧筆記，並解除鎖定週，回到即時的本週。此動作無法復原。",
+      "dev.schemaTitle":"JSON 格式說明（欄位、必填/選填、預設值）",
+      "dev.msgNoDb":"尚未連接到儲存服務，無法匯入。", "dev.msgJsonParseFail":"JSON 解析失敗：",
+      "dev.msgImportFailPrefix":"匯入失敗，發現 {n} 個問題（未載入任何資料）：\n• ",
+      "dev.msgImportSuccess":"✅ 匯入成功", "dev.msgImportError":"匯入過程中發生錯誤：", "dev.msgReadFail":"讀取檔案失敗。",
+      "dev.msgDownloadUnavailable":"下載不可用", "dev.msgExportFail":"匯出失敗",
+      "dev.msgConfirmReset":"確定要重置所有 Planner 資料嗎？固定行程、任務、偏好、保護時段、目前週的回顧筆記都會清空，且無法復原。",
+      "dev.msgResetSuccess":"✅ 已重置。回到即時的本週。", "dev.msgResetFail":"重置失敗：",
+      "output.prevWeek":"◀ 上週", "output.thisWeek":"本週", "output.nextWeek":"下週 ▶", "output.pdfBtn":"⬇ 下載本週 PDF",
+      "output.thisWeekSuffix":"（本週）", "output.pinnedSuffix":"（已鎖定測試週",
+      "output.undoBtn":"↶ 復原上一步", "output.resetScheduleBtn":"⟲ 還原成系統排程",
+      "output.dragHint":"拖曳任務方塊可手動調整時間；點一下可查看/編輯細節。",
+      "output.pdfPreparing":"準備中…",
+      "legend.fixed":"固定行程", "legend.must":"! Must", "legend.want":"♥ Want", "legend.optional":"· Optional",
+      "legend.free":"保護 / 自由時段", "legend.locked":"固定不可移動",
+      "summary.ok":"🎉 本週 must 任務與每週目標都已排入，沒有延遲。", "summary.warnPrefix":"⚠️ 這週排不下：",
+      "summary.taskShort":"「{name}」還差 {min} 分鐘沒排進去，截止前完不成，需要調整",
+      "summary.repeatMissing":"「{name}」還少 {n} 次没排到",
+      "master.title":"任務總表", "master.hint":"依截止日期排序，勾選代表完成 — 完成的任務不會再被排入行事曆。",
+      "master.empty":"先到「輸入資料」新增任務吧。", "master.dueLabel":"截止", "master.minLabel":"分鐘",
+      "master.scheduledAtLabel":"已排：", "master.notesLabel":"備註：", "master.markComplete":"標記完成：",
+      "status.completed":"已完成", "status.overdue":"逾期", "status.scheduled":"已排入", "status.notScheduled":"未排入",
+      "freetime.title":"自由時段建議", "freetime.hint":"這些時段沒有被排入任何事項 — 只是建議，真正要不要用來做什麼由你決定。",
+      "freetime.empty":"這週沒有明顯的空白時段了，可能排得有點緊。",
+      "freetime.ideaShort":"閱讀／回信／整理筆記", "freetime.ideaMedium":"運動／閱讀／社交", "freetime.ideaLarge":"朋友／電影／完全自由",
+      "freetime.dayPart":"{day}{part}", "freetime.hourUnit":"小時", "freetime.minUnit":"分鐘", "freetime.minShortUnit":"分",
+      "reflect.title":"本週回顧", "reflect.hint":"隨時記幾句都可以，會自動保存。",
+      "reflect.wins":"這週做到的事", "reflect.winsPh":"這週的收穫、完成的事…",
+      "reflect.unfinished":"沒完成的事", "reflect.unfinishedPh":"還留著的、往後延的…",
+      "reflect.longer":"花的時間比預期久", "reflect.longerPh":"低估時間的地方…",
+      "reflect.change":"下週想調整", "reflect.changePh":"下週想試試看的調整…",
+      "reflect.notes":"其他筆記", "reflect.notesPh":"任何補充",
+      "footer.note":"由 weekly-plan 排程引擎於瀏覽器端即時計算，任何資料變動都會自動重排。",
+      "popover.category":"分類", "popover.scheduled":"目前時間", "popover.duration":"時長", "popover.origin":"來源",
+      "popover.originAuto":"系統排程", "popover.originManual":"手動調整", "popover.dayLabel":"星期",
+      "adj.badge":"已調整",
+      "drag.overlapFixed":"這裡跟固定行程「{name}」重疊，無法放置。",
+      "drag.overlapProtected":"這裡是保護時段「{name}」，無法放置。",
+      "drag.overlapTask":"這裡已經排了「{name}」，無法放置。",
+      "drag.outOfBounds":"超出當天可排程的時間範圍。",
+      "drag.deadlineViolation":"這是 Must 任務，移到這裡會超過截止時間（{deadline}），已取消移動。",
+      "drag.locked":"固定行程與保護時段無法用拖曳調整。",
+      "drag.noChange":"位置沒有改變。",
+      "v.notObject":"最外層必須是一個 JSON 物件（object）。",
+      "v.weekStart":"weekStart 必須是有效的 \"YYYY-MM-DD\" 日期（收到：{v}）。",
+      "v.prefsNotObject":"preferences 必須是物件。",
+      "v.dayStart":"preferences.dayStart 必須是 \"HH:MM\"（收到：{v}）。",
+      "v.dayEnd":"preferences.dayEnd 必須是 \"HH:MM\"（收到：{v}）。",
+      "v.dayStartAfterEnd":"preferences.dayStart 必須早於 preferences.dayEnd。",
+      "v.sacrificePriorityType":"preferences.sacrificePriority 必須是字串陣列。",
+      "v.protectedBlocksType":"protectedBlocks 必須是陣列。",
+      "v.itemNotObject":"{tag} 必須是物件。",
+      "v.labelRequired":"{tag}.label 必須是非空字串。",
+      "v.daysInvalid":"{tag} (\"{name}\").days 必須是非空陣列，只能是 {days}。",
+      "v.startEndInvalid":"{tag} (\"{name}\") 的 start/end 必須是有效 \"HH:MM\" 且 start < end。",
+      "v.fixedEventsType":"fixedEvents 必須是陣列。",
+      "v.nameRequired":"{tag}.name 必須是非空字串。",
+      "v.tasksType":"tasks 必須是陣列。",
+      "v.categoryInvalid":"{tag}{label}.category 必須是 must / want / optional 之一（收到：{v}）。",
+      "v.deadlineInvalid":"{tag}{label}.deadline 必須是 null、\"YYYY-MM-DD\" 或 \"YYYY-MM-DDTHH:MM\"（收到：{v}）。",
+      "v.estimatedMinutesInvalid":"{tag}{label}.estimatedMinutes 必須是正數（收到：{v}）。",
+      "v.repeatPerWeekInvalid":"{tag}{label}.repeatPerWeek 必須是 >=1 的整數（收到：{v}）。",
+      "v.splittableInvalid":"{tag}{label}.splittable 必須是 boolean。",
+      "v.minBlockMinutesInvalid":"{tag}{label}.minBlockMinutes 必須是正數（收到：{v}）。",
+      "v.minBlockExceedsEstimated":"{tag}{label}.minBlockMinutes 不能大於 estimatedMinutes。",
+      "v.timePreferenceInvalid":"{tag}{label}.timePreference 必須是 any/morning/afternoon/evening（收到：{v}）。",
+      "v.preferredDayInvalid":"{tag}{label}.preferredDay 必須是 {days} 之一或 null（收到：{v}）。",
+      "v.locationArrayType":"{tag}{label}.locationOptions 陣列內必須都是字串。",
+      "v.locationType":"{tag}{label}.locationOptions 必須是字串陣列。",
+      "v.notesType":"{tag}{label}.notes 必須是字串。",
+      "v.completedType":"{tag}{label}.completed 必須是 boolean。"
+    },
+    en: {
+      "app.title":"Weekly Planner", "app.subtitle":"Fixed events, tasks, and preferences all go in here — your weekly plan schedules itself",
+      "tabs.input":"Input", "tabs.output":"This Week",
+      "common.add":"Add", "common.cancel":"Cancel", "common.save":"Save", "common.close":"Close",
+      "common.start":"Start", "common.end":"End", "common.days":"Days", "common.any":"Any",
+      "common.morning":"Morning", "common.afternoon":"Afternoon", "common.evening":"Evening", "common.none":"None",
+      "common.edit":"Edit", "common.delete":"Delete", "common.update":"Update",
+      "day.mon":"Mon","day.tue":"Tue","day.wed":"Wed","day.thu":"Thu","day.fri":"Fri","day.sat":"Sat","day.sun":"Sun",
+      "fixed.title":"Fixed Events", "fixed.hint":"Class, work, commute, meetings — time blocks that never move.",
+      "fixed.add":"+ Add Fixed Event", "fixed.name":"Name", "fixed.namePh":"e.g. Course A",
+      "fixed.start":"Start Time", "fixed.end":"End Time", "fixed.location":"Location", "fixed.locationPh":"Room 301",
+      "fixed.people":"People", "fixed.peoplePh":"Manager, team", "fixed.empty":"No fixed events yet.",
+      "task.title":"Tasks", "task.hint":"Must / Want / Optional is your own call — it's your priority order, not something the system decides for you.",
+      "task.add":"+ Add Task", "task.name":"Task Name", "task.namePh":"e.g. Final report draft",
+      "task.category":"Category", "task.catMust":"Must (has to get done)", "task.catWant":"Want (want to keep up regularly)", "task.catOptional":"Optional (if there's time)",
+      "task.deadline":"Deadline (optional)", "task.deadline2":"Due", "task.minutes":"Estimated Time per Session (min)",
+      "task.repeat":"Times per Week", "task.pref":"Time Preference", "task.day":"Specific Day (optional)",
+      "task.minblock":"Minimum Block (min)", "task.location":"Location Requirements (comma-separated, or \"anywhere\")", "task.locationPh":"Home, Library",
+      "task.splittable":"Can be split into multiple sessions", "task.notes":"Notes", "task.notesPh":"Additional notes", "task.empty":"No tasks yet.",
+      "task.repeatSuffix":"× {n}/week",
+      "prefs.title":"Preferences", "prefs.hint":"These are your own decisions — the AI only schedules around them; it never decides on its own what to protect or what to sacrifice.",
+      "prefs.dailyRange":"Daily Schedulable Time Range", "prefs.protected":"Protected Blocks (kept no matter what)",
+      "prefs.protectedAdd":"+ Add Protected Block", "prefs.protectedNamePh":"Friday night off", "prefs.protectedEmpty":"No protected blocks yet.",
+      "prefs.recurringNote":"Recurring activities you want to maintain (exercise, reading…) go directly under \"Tasks\" on the left — pick category Want, leave the deadline blank, and fill in \"Times per Week.\" No need to set them up again here.",
+      "prefs.priority":"Sacrifice Order When Time Runs Short (top gets sacrificed first)", "prefs.priorityHint":"Must tasks and protected blocks are never on this list.",
+      "prefs.priorityPh":"Type an item, e.g. Reading", "prefs.priorityEmpty":"No items yet.",
+      "dev.title":"Dev & Test Tools",
+      "dev.hint":"Extra tooling for reproducible testing across versions — not the normal workflow; use the form on the left for everyday use. Importing a test case overwrites fixed events / tasks / preferences / protected blocks wholesale with the JSON content, and pins \"This Week\" to the week the JSON specifies, so different versions of the scheduler can be compared on identical input.",
+      "dev.importLabel":"Import Test Case JSON", "dev.exportNameLabel":"Test Case Name for Export (optional)",
+      "dev.exportBtn":"⬇ Export Current Input as JSON", "dev.resetBtn":"⟲ Reset Planner Data",
+      "dev.resetHint":"Reset clears fixed events, tasks, preferences, protected blocks, and the currently displayed week's reflection notes, and unpins the week back to the live current week. This cannot be undone.",
+      "dev.schemaTitle":"JSON Schema Reference (fields, required/optional, defaults)",
+      "dev.msgNoDb":"Not connected to the storage service — can't import.", "dev.msgJsonParseFail":"JSON parse failed: ",
+      "dev.msgImportFailPrefix":"Import failed — found {n} problem(s) (nothing was loaded):\n• ",
+      "dev.msgImportSuccess":"✅ Import succeeded", "dev.msgImportError":"An error occurred during import: ", "dev.msgReadFail":"Failed to read the file.",
+      "dev.msgDownloadUnavailable":"Download unavailable", "dev.msgExportFail":"Export failed",
+      "dev.msgConfirmReset":"Reset all planner data? Fixed events, tasks, preferences, protected blocks, and this week's reflection notes will all be cleared, and this cannot be undone.",
+      "dev.msgResetSuccess":"✅ Reset complete. Back to the live current week.", "dev.msgResetFail":"Reset failed: ",
+      "output.prevWeek":"◀ Prev Week", "output.thisWeek":"This Week", "output.nextWeek":"Next Week ▶", "output.pdfBtn":"⬇ Download This Week's PDF",
+      "output.thisWeekSuffix":" (this week)", "output.pinnedSuffix":" (test week pinned",
+      "output.undoBtn":"↶ Undo Last Move", "output.resetScheduleBtn":"⟲ Reset to Generated Schedule",
+      "output.dragHint":"Drag a task block to move it; click a block to view/edit its details.",
+      "output.pdfPreparing":"Preparing…",
+      "legend.fixed":"Fixed Events", "legend.must":"! Must", "legend.want":"♥ Want", "legend.optional":"· Optional",
+      "legend.free":"Protected / Free Time", "legend.locked":"Locked, can't move",
+      "summary.ok":"🎉 All Must tasks and weekly targets are scheduled — nothing's behind.", "summary.warnPrefix":"⚠️ Doesn't all fit this week:",
+      "summary.taskShort":"“{name}” is short {min} min — won't finish before its deadline, needs adjusting",
+      "summary.repeatMissing":"“{name}” is missing {n} session(s)",
+      "master.title":"Master Task List", "master.hint":"Sorted by deadline — check off to mark complete. Completed tasks are no longer scheduled.",
+      "master.empty":"Add a task under \"Input\" first.", "master.dueLabel":"Due", "master.minLabel":"min",
+      "master.scheduledAtLabel":"Scheduled: ", "master.notesLabel":"Notes: ", "master.markComplete":"Mark complete: ",
+      "status.completed":"Completed", "status.overdue":"Overdue", "status.scheduled":"Scheduled", "status.notScheduled":"Not scheduled",
+      "freetime.title":"Free-Time Suggestions", "freetime.hint":"A short list of the most useful open blocks — suggestions only, never booked for you.",
+      "freetime.empty":"No meaningfully large open blocks this week — it's packed tight.",
+      "freetime.ideaShort":"Reading / email / notes", "freetime.ideaMedium":"Exercise / reading / social", "freetime.ideaLarge":"Friends / a movie / totally free",
+      "freetime.dayPart":"{day} {part}", "freetime.hourUnit":"h", "freetime.minUnit":" min", "freetime.minShortUnit":"m",
+      "reflect.title":"Weekly Reflection", "reflect.hint":"Jot a few notes any time — it saves automatically.",
+      "reflect.wins":"Wins This Week", "reflect.winsPh":"What you accomplished this week…",
+      "reflect.unfinished":"Didn't Finish", "reflect.unfinishedPh":"Left over, pushed to next week…",
+      "reflect.longer":"Took Longer Than Expected", "reflect.longerPh":"Where you underestimated the time…",
+      "reflect.change":"Want to Change Next Week", "reflect.changePh":"Adjustments to try next week…",
+      "reflect.notes":"Other Notes", "reflect.notesPh":"Anything else",
+      "footer.note":"Computed live in your browser by the weekly-plan scheduling engine — any data change reschedules automatically.",
+      "popover.category":"Category", "popover.scheduled":"Scheduled", "popover.duration":"Duration", "popover.origin":"Origin",
+      "popover.originAuto":"System-scheduled", "popover.originManual":"Manually adjusted", "popover.dayLabel":"Day",
+      "adj.badge":"Adjusted",
+      "drag.overlapFixed":"That overlaps the fixed event “{name}” — can't drop there.",
+      "drag.overlapProtected":"That's the protected block “{name}” — can't drop there.",
+      "drag.overlapTask":"“{name}” is already scheduled there — can't drop there.",
+      "drag.outOfBounds":"That's outside the day's schedulable time range.",
+      "drag.deadlineViolation":"This is a Must task — moving it here would push it past its deadline ({deadline}). Move cancelled.",
+      "drag.locked":"Fixed events and protected blocks can't be moved by dragging.",
+      "drag.noChange":"Position unchanged.",
+      "v.notObject":"The top level must be a JSON object.",
+      "v.weekStart":"weekStart must be a valid \"YYYY-MM-DD\" date (got: {v}).",
+      "v.prefsNotObject":"preferences must be an object.",
+      "v.dayStart":"preferences.dayStart must be \"HH:MM\" (got: {v}).",
+      "v.dayEnd":"preferences.dayEnd must be \"HH:MM\" (got: {v}).",
+      "v.dayStartAfterEnd":"preferences.dayStart must be earlier than preferences.dayEnd.",
+      "v.sacrificePriorityType":"preferences.sacrificePriority must be an array of strings.",
+      "v.protectedBlocksType":"protectedBlocks must be an array.",
+      "v.itemNotObject":"{tag} must be an object.",
+      "v.labelRequired":"{tag}.label must be a non-empty string.",
+      "v.daysInvalid":"{tag} (\"{name}\").days must be a non-empty array, using only {days}.",
+      "v.startEndInvalid":"{tag} (\"{name}\") start/end must be valid \"HH:MM\" with start < end.",
+      "v.fixedEventsType":"fixedEvents must be an array.",
+      "v.nameRequired":"{tag}.name must be a non-empty string.",
+      "v.tasksType":"tasks must be an array.",
+      "v.categoryInvalid":"{tag}{label}.category must be one of must / want / optional (got: {v}).",
+      "v.deadlineInvalid":"{tag}{label}.deadline must be null, \"YYYY-MM-DD\", or \"YYYY-MM-DDTHH:MM\" (got: {v}).",
+      "v.estimatedMinutesInvalid":"{tag}{label}.estimatedMinutes must be a positive number (got: {v}).",
+      "v.repeatPerWeekInvalid":"{tag}{label}.repeatPerWeek must be an integer >= 1 (got: {v}).",
+      "v.splittableInvalid":"{tag}{label}.splittable must be a boolean.",
+      "v.minBlockMinutesInvalid":"{tag}{label}.minBlockMinutes must be a positive number (got: {v}).",
+      "v.minBlockExceedsEstimated":"{tag}{label}.minBlockMinutes cannot exceed estimatedMinutes.",
+      "v.timePreferenceInvalid":"{tag}{label}.timePreference must be any/morning/afternoon/evening (got: {v}).",
+      "v.preferredDayInvalid":"{tag}{label}.preferredDay must be one of {days} or null (got: {v}).",
+      "v.locationArrayType":"{tag}{label}.locationOptions array entries must all be strings.",
+      "v.locationType":"{tag}{label}.locationOptions must be an array of strings.",
+      "v.notesType":"{tag}{label}.notes must be a string.",
+      "v.completedType":"{tag}{label}.completed must be a boolean."
+    }
+  };
+  var currentLang = (function(){
+    try { var saved = localStorage.getItem("weeklyPlannerV2Lang"); if(saved==="en"||saved==="zh") return saved; } catch(e){}
+    return "zh";
+  })();
+  function tr(key, vars){
+    var s = (I18N[currentLang] && I18N[currentLang][key]) || (I18N.zh[key]) || key;
+    if(vars) Object.keys(vars).forEach(function(k){ s = s.replace("{"+k+"}", vars[k]); });
+    return s;
+  }
+  function dayLabel(key){ return tr("day."+key); }
+  function applyI18n(){
+    var htmlLang = currentLang==="en" ? "en" : "zh-TW";
+    document.documentElement.setAttribute("lang", htmlLang);
+    document.querySelectorAll("[data-i18n]").forEach(function(el){
+      el.textContent = tr(el.getAttribute("data-i18n"));
+    });
+    document.querySelectorAll("[data-i18n-ph]").forEach(function(el){
+      el.placeholder = tr(el.getAttribute("data-i18n-ph"));
+    });
+    // Native time/datetime-local inputs render their placeholder & AM/PM text per
+    // this per-element lang attribute (not the page's), regardless of viewer locale.
+    document.querySelectorAll('input[type="time"], input[type="datetime-local"]').forEach(function(el){
+      el.setAttribute("lang", htmlLang);
+    });
+    document.getElementById("lang-zh").setAttribute("aria-pressed", String(currentLang==="zh"));
+    document.getElementById("lang-en").setAttribute("aria-pressed", String(currentLang==="en"));
+  }
+  function setLang(lang){
+    currentLang = lang;
+    try { localStorage.setItem("weeklyPlannerV2Lang", lang); } catch(e){}
+    applyI18n();
+    renderFixedList(); renderTaskInputList(); renderProtectedList(); renderPriorityList();
+    buildDevSchemaText();
+    if(!tabOutput.hidden) renderOutput();
+  }
+  var CATEGORY_LABEL = {must:"! Must", want:"♥ Want", optional:"· Optional"};
+
+  function esc(s){
+    return String(s==null?"":s).replace(/[&<>"']/g, function(c){
+      return {"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[c];
+    });
+  }
+  function toMinutes(hhmm){
+    if(!hhmm) return null;
+    var p = hhmm.split(":"); return (+p[0])*60 + (+p[1]);
+  }
+  function fmtMin(m){
+    var h = Math.floor(m/60), mm = m%60;
+    return (h<10?"0":"")+h+":"+(mm<10?"0":"")+mm;
+  }
+  function fmtDateShort(d){ return (d.getMonth()+1)+"/"+d.getDate(); }
+  function dateOnly(d){ var n=new Date(d); n.setHours(0,0,0,0); return n; }
+  function sameDate(a,b){ return dateOnly(a).getTime()===dateOnly(b).getTime(); }
+
+  function getWeekDates(base, offsetWeeks){
+    var d = new Date(base);
+    var dow = (d.getDay()+6)%7; // 0=mon
+    var monday = new Date(d);
+    monday.setDate(d.getDate()-dow+ (offsetWeeks||0)*7);
+    monday.setHours(0,0,0,0);
+    var out = [];
+    for(var i=0;i<7;i++){
+      var nd = new Date(monday); nd.setDate(monday.getDate()+i);
+      out.push(nd);
+    }
+    return out;
+  }
+
+  function parseDeadline(str){
+    if(!str) return null;
+    // datetime-local "2026-09-26T23:59" or plain date "2026-09-26"
+    var d = new Date(str.length<=10 ? str+"T23:59:59" : str);
+    return isNaN(d.getTime()) ? null : d;
+  }
+
+  /* ---------------- gap helpers ---------------- */
+  function subtractRange(gaps, s, e){
+    var out = [];
+    gaps.forEach(function(g){
+      if(e<=g.start || s>=g.end){ out.push(g); return; }
+      if(s>g.start) out.push({start:g.start, end:s});
+      if(e<g.end) out.push({start:e, end:g.end});
+    });
+    return out;
+  }
+  function prefWindow(pref, dayStart, dayEnd){
+    var windows = {
+      morning:[dayStart, Math.min(toMinutes("12:00"), dayEnd)],
+      afternoon:[Math.max(toMinutes("12:00"), dayStart), Math.min(toMinutes("18:00"), dayEnd)],
+      evening:[Math.max(toMinutes("18:00"), dayStart), dayEnd]
+    };
+    return windows[pref] || null;
+  }
+  function overlapsPref(g, pref, dayStart, dayEnd){
+    if(pref==="any"||!pref) return true;
+    var w = prefWindow(pref, dayStart, dayEnd); if(!w) return true;
+    return g.start < w[1] && g.end > w[0];
+  }
+  // Where inside gap g a `remaining`-minute block should start to land as close
+  // to the preferred window as possible (never outside g).
+  function prefStartWithin(g, pref, dayStart, dayEnd, remaining){
+    var w = prefWindow(pref, dayStart, dayEnd);
+    if(!w) return g.start;
+    var start = Math.max(g.start, w[0]);
+    if(start + remaining > g.end) start = g.end - remaining;
+    if(start < g.start) start = g.start;
+    return start;
+  }
+
+  /* ---------------- scheduler ---------------- */
+  function schedule(weekDates, prefs, fixedEvents, tasks){
+    var dayStart = toMinutes(prefs.dayStart || "07:30");
+    var dayEnd = toMinutes(prefs.dayEnd || "23:30");
+
+    var days = weekDates.map(function(date, i){
+      return {date:date, key:DAY_KEYS[i], gaps:[{start:dayStart,end:dayEnd}], blocks:[]};
+    });
+
+    // Session counter per taskId so repeatPerWeek>1 sessions each get a stable,
+    // distinct blockKey ("taskId::0", "taskId::1", ...) — used to anchor manual
+    // overrides to a specific placed block across re-renders of the same input.
+    var sessionCounters = {};
+    function place(day, type, label, s, e, detail, taskId){
+      var movable = !!taskId;
+      var blockKey = null;
+      if(movable){
+        var idx = sessionCounters[taskId] || 0;
+        blockKey = taskId + "::" + idx;
+        sessionCounters[taskId] = idx + 1;
+      }
+      day.blocks.push({type:type, label:label, start:s, end:e, detail:detail, taskId:taskId||null, blockKey:blockKey, movable:movable});
+      day.gaps = subtractRange(day.gaps, s, e);
+    }
+
+    fixedEvents.forEach(function(ev){
+      var s = toMinutes(ev.start), e = toMinutes(ev.end);
+      if(s==null||e==null||e<=s) return;
+      days.forEach(function(day){
+        if((ev.days||[]).indexOf(day.key)===-1) return;
+        place(day, "fixed", ev.name, s, e, ev.name+"（"+fmtMin(s)+"–"+fmtMin(e)+(ev.location?" · "+ev.location:"")+"）");
+      });
+    });
+
+    (prefs.protectedBlocks||[]).forEach(function(pb){
+      var s = toMinutes(pb.start), e = toMinutes(pb.end);
+      if(s==null||e==null||e<=s) return;
+      days.forEach(function(day){
+        if((pb.days||[]).indexOf(day.key)===-1) return;
+        place(day, "free-protected", pb.label, s, e, tr("master.scheduledAtLabel")+pb.label);
+      });
+    });
+
+    function clippedGaps(day, deadline){
+      if(!deadline) return day.gaps;
+      var dDate = dateOnly(deadline).getTime();
+      var dayDate = dateOnly(day.date).getTime();
+      if(dayDate > dDate) return [];
+      if(dayDate < dDate) return day.gaps;
+      var cutoff = deadline.getHours()*60 + deadline.getMinutes();
+      return day.gaps.map(function(g){
+        if(g.start >= cutoff) return null;
+        return {start:g.start, end:Math.min(g.end, cutoff)};
+      }).filter(function(g){ return g && g.end > g.start; });
+    }
+
+    var shortfalls = [];
+
+    var activeTasks = tasks.filter(function(t){ return !t.completed; });
+    activeTasks.sort(function(a,b){
+      var ca = CATEGORY_ORDER[a.category]==null?3:CATEGORY_ORDER[a.category];
+      var cb = CATEGORY_ORDER[b.category]==null?3:CATEGORY_ORDER[b.category];
+      if(ca!==cb) return ca-cb;
+      var da = parseDeadline(a.deadline), db_ = parseDeadline(b.deadline);
+      if(da&&db_) return da-db_;
+      if(da) return -1; if(db_) return 1;
+      return 0;
+    });
+
+    activeTasks.forEach(function(task){
+      var sessionMinutes = +task.estimatedMinutes || 0;
+      if(sessionMinutes<=0) return;
+      var repeat = Math.max(1, +task.repeatPerWeek || 1);
+      var deadline = parseDeadline(task.deadline);
+      var minBlock = +task.minBlockMinutes || sessionMinutes;
+      var pref = task.timePreference || "any";
+      var fixedDay = task.preferredDay || null;
+      var placedSessions = 0;
+      var usedDaysForTask = {};
+
+      var baseEligible = days.filter(function(day){
+        if(fixedDay && day.key!==fixedDay) return false;
+        return !deadline || dateOnly(day.date) <= dateOnly(deadline);
+      });
+      if(baseEligible.length===0){
+        if(task.category==="must") shortfalls.push({kind:"task", name:task.name, minutes:sessionMinutes*repeat});
+        return;
+      }
+
+      for(var s=0; s<repeat; s++){
+        var remaining = sessionMinutes;
+        // prefer a day not yet used by this task, so repeats spread across the week
+        var passOrder = [
+          baseEligible.filter(function(d){ return !usedDaysForTask[d.key]; }),
+          baseEligible
+        ];
+        var placedWhole = false;
+
+        passOrder.forEach(function(eligibleDays){
+          if(placedWhole || eligibleDays.length===0) return;
+          [true,false].forEach(function(needPrefMatch){
+            if(placedWhole) return;
+            for(var i=0;i<eligibleDays.length && !placedWhole;i++){
+              var day = eligibleDays[i];
+              var gaps = clippedGaps(day, deadline).slice().sort(function(a,b){return a.start-b.start;});
+              for(var j=0;j<gaps.length;j++){
+                var g = gaps[j];
+                if((g.end-g.start) < remaining) continue;
+                if(needPrefMatch && !overlapsPref(g, pref, dayStart, dayEnd)) continue;
+                var placeAt = needPrefMatch ? prefStartWithin(g, pref, dayStart, dayEnd, remaining) : g.start;
+                place(day, task.category, task.name, placeAt, placeAt+remaining,
+                  task.name+"（"+fmtMin(placeAt)+"–"+fmtMin(placeAt+remaining)+"）", task.id);
+                remaining = 0; placedWhole = true; usedDaysForTask[day.key]=true;
+                break;
+              }
+            }
+          });
+        });
+
+        if(remaining>0 && task.splittable){
+          var guard = 0;
+          while(remaining>0 && guard<50){
+            guard++;
+            var best=null, bestDay=null;
+            baseEligible.forEach(function(day){
+              clippedGaps(day, deadline).forEach(function(g){
+                var len = g.end-g.start;
+                if(len<minBlock) return;
+                if(!best || len>(best.end-best.start)){ best=g; bestDay=day; }
+              });
+            });
+            if(!best) break;
+            var take = Math.min(remaining, best.end-best.start);
+            place(bestDay, task.category, task.name, best.start, best.start+take,
+              task.name+"（"+fmtMin(best.start)+"–"+fmtMin(best.start+take)+"）", task.id);
+            remaining -= take;
+            usedDaysForTask[bestDay.key]=true;
+          }
+        }
+
+        if(remaining>0){
+          if(task.category==="must") shortfalls.push({kind:"task", name:task.name, minutes:remaining});
+          else if(repeat>1) shortfalls.push({kind:"repeat", name:task.name, missing:repeat-placedSessions});
+          break; // stop trying further sessions once one fails to fit
+        }
+        placedSessions++;
+      }
+    });
+
+    return {days:days, shortfalls:shortfalls, dayStart:dayStart, dayEnd:dayEnd};
+  }
+
+  // Merges manual per-block overrides on top of the algorithm's baseline schedule.
+  // Two passes, per the V2 design: (1) reserve every block that ISN'T being
+  // manually moved at its baseline position, (2) place each overridden block,
+  // validating it against everything already reserved (fixed events, protected
+  // blocks, other task blocks) plus the daily bounds and, for Must tasks, the
+  // deadline. A block whose override no longer fits (stale override after the
+  // underlying data changed, or a rare case where two overrides land on the same
+  // slot) falls back to its original baseline position rather than being dropped,
+  // and is flagged `conflict:true` so the calendar can show it instead of
+  // silently overlapping two blocks with no visual indication.
+  function applyOverrides(baseline, overridesMap){
+    overridesMap = overridesMap || {};
+    var byKey = {};
+    baseline.days.forEach(function(day){
+      day.blocks.forEach(function(b){ if(b.blockKey) byKey[b.blockKey] = {day:day, block:b}; });
+    });
+
+    var dayByKey = {};
+    var outDays = baseline.days.map(function(day){
+      var nd = {date:day.date, key:day.key, gaps:[{start:baseline.dayStart, end:baseline.dayEnd}], blocks:[]};
+      dayByKey[day.key] = nd;
+      return nd;
+    });
+
+    function reserve(nd, b){
+      nd.blocks.push(b);
+      nd.gaps = subtractRange(nd.gaps, b.start, b.end);
+    }
+    function fitsFree(nd, s, e){
+      return nd.gaps.some(function(g){ return s>=g.start && e<=g.end; });
+    }
+
+    baseline.days.forEach(function(day){
+      var nd = dayByKey[day.key];
+      day.blocks.forEach(function(b){
+        if(b.blockKey && Object.prototype.hasOwnProperty.call(overridesMap, b.blockKey)) return;
+        reserve(nd, Object.assign({}, b));
+      });
+    });
+
+    Object.keys(overridesMap).forEach(function(blockKey){
+      var found = byKey[blockKey];
+      if(!found) return; // stale override for a session that no longer exists
+      var src = found.block;
+      var ov = overridesMap[blockKey];
+      var nd = dayByKey[ov.day];
+      var dur = src.end - src.start;
+      var s = ov.start, e = ov.start + dur;
+
+      var deadlineOk = true;
+      if(nd && src.type==="must"){
+        var task = state.tasks.find(function(x){ return x.id===src.taskId; });
+        var deadline = task ? parseDeadline(task.deadline) : null;
+        if(deadline){
+          var dDate = dateOnly(deadline).getTime();
+          var ndDate = dateOnly(nd.date).getTime();
+          if(ndDate > dDate) deadlineOk = false;
+          else if(ndDate === dDate && e > (deadline.getHours()*60+deadline.getMinutes())) deadlineOk = false;
+        }
+      }
+      var boundsOk = !!nd && s>=baseline.dayStart && e<=baseline.dayEnd;
+      var fits = boundsOk && deadlineOk && fitsFree(nd, s, e);
+
+      if(fits){
+        reserve(nd, Object.assign({}, src, {
+          start:s, end:e, manual:true,
+          detail: src.label+"（"+fmtMin(s)+"–"+fmtMin(e)+"）"
+        }));
+      } else {
+        var origDay = dayByKey[found.day.key];
+        var conflict = !fitsFree(origDay, src.start, src.end);
+        reserve(origDay, Object.assign({}, src, {manual:true, overrideFailed:true, conflict:conflict}));
+      }
+    });
+
+    return { days: outDays, shortfalls: baseline.shortfalls, dayStart: baseline.dayStart, dayEnd: baseline.dayEnd };
+  }
+
+  /* ---------------- state ---------------- */
+  var state = {
+    fixedEvents: [],
+    tasks: [],
+    prefs: {dayStart:"07:30", dayEnd:"23:30", protectedBlocks:[], sacrificePriority:[]},
+    weekOffset: 0,
+    pinnedWeekStart: null, // Date|null — set by a dev/test JSON import to lock "this week" to a fixed date instead of the real today
+    overrides: {} // blockKey -> {day, start} — this week's manual placements, loaded from db doc overrides/<weekKey>
+  };
+  var db = null;
+  var unsub = [];
+  var currentOverridesKey = null;
+  var undoStack = []; // {weekKey, blockKey, prevValue(or undefined to delete)} — most recent move last
+
+  /* ---------------- tabs ---------------- */
+  var tabBtnInput = document.getElementById("tab-btn-input");
+  var tabBtnOutput = document.getElementById("tab-btn-output");
+  var tabInput = document.getElementById("tab-input");
+  var tabOutput = document.getElementById("tab-output");
+  function showTab(which){
+    var isInput = which==="input";
+    tabInput.hidden = !isInput; tabOutput.hidden = isInput;
+    tabBtnInput.setAttribute("aria-selected", String(isInput));
+    tabBtnOutput.setAttribute("aria-selected", String(!isInput));
+    if(!isInput) renderOutput();
+  }
+  tabBtnInput.addEventListener("click", function(){ showTab("input"); });
+  tabBtnOutput.addEventListener("click", function(){ showTab("output"); });
+
+  /* ---------------- language toggle ---------------- */
+  document.getElementById("lang-zh").addEventListener("click", function(){ setLang("zh"); });
+  document.getElementById("lang-en").addEventListener("click", function(){ setLang("en"); });
+  applyI18n();
+
+  /* ---------------- generic add/cancel toggles ---------------- */
+  document.querySelectorAll("[data-toggle]").forEach(function(btn){
+    btn.addEventListener("click", function(){
+      var form = document.getElementById(btn.dataset.toggle);
+      form.hidden = !form.hidden;
+    });
+  });
+  document.querySelectorAll("[data-cancel]").forEach(function(btn){
+    btn.addEventListener("click", function(){
+      var form = document.getElementById(btn.dataset.cancel);
+      form.reset();
+      form.querySelectorAll(".daypicker input").forEach(function(c){c.checked=false;});
+      form.querySelector('input[type="hidden"]').value = "";
+      form.hidden = true;
+      var submitBtn = form.querySelector('button[type="submit"]');
+      if(submitBtn) submitBtn.textContent = tr("common.add");
+    });
+  });
+
+  function getCheckedDays(container){
+    return Array.prototype.slice.call(container.querySelectorAll("input:checked")).map(function(i){return i.value;});
+  }
+  function setCheckedDays(container, days){
+    container.querySelectorAll("input").forEach(function(i){ i.checked = (days||[]).indexOf(i.value)!==-1; });
+  }
+
+  /* ================= FIXED EVENTS ================= */
+  var fixedListEl = document.getElementById("fixed-list");
+  function renderFixedList(){
+    fixedListEl.innerHTML = "";
+    if(state.fixedEvents.length===0){
+      fixedListEl.innerHTML = '<li class="empty-note">'+esc(tr("fixed.empty"))+'</li>';
+      return;
+    }
+    state.fixedEvents.forEach(function(ev){
+      var li = document.createElement("li");
+      li.className = "row-item";
+      var days = (ev.days||[]).map(dayLabel).join(currentLang==="en" ? ", " : "、");
+      li.innerHTML =
+        '<span class="dot" style="background:var(--sage)"></span>'+
+        '<div class="info"><span class="name">'+esc(ev.name)+'</span>'+
+        '<span class="meta">'+esc(days)+' · '+esc(ev.start)+'–'+esc(ev.end)+(ev.location?' · '+esc(ev.location):'')+'</span></div>'+
+        '<div class="actions">'+
+          '<button class="icon-btn" data-edit="'+ev.id+'" title="'+esc(tr("common.edit"))+'">✎</button>'+
+          '<button class="icon-btn" data-del="'+ev.id+'" title="'+esc(tr("common.delete"))+'">✕</button>'+
+        '</div>';
+      fixedListEl.appendChild(li);
+    });
+  }
+  fixedListEl.addEventListener("click", function(e){
+    var editBtn = e.target.closest("[data-edit]");
+    var delBtn = e.target.closest("[data-del]");
+    if(editBtn){
+      var ev = state.fixedEvents.find(function(x){return x.id===editBtn.dataset.edit;});
+      if(!ev) return;
+      document.getElementById("fixed-form").hidden = false;
+      document.getElementById("fixed-edit-id").value = ev.id;
+      document.getElementById("fixed-name").value = ev.name;
+      setCheckedDays(document.getElementById("fixed-days"), ev.days);
+      document.getElementById("fixed-start").value = ev.start;
+      document.getElementById("fixed-end").value = ev.end;
+      document.getElementById("fixed-location").value = ev.location||"";
+      document.getElementById("fixed-people").value = ev.people||"";
+      document.getElementById("fixed-submit").textContent = tr("common.update");
+    } else if(delBtn){
+      if(!db) return;
+      db.doc("fixedEvents/"+delBtn.dataset.del).delete().catch(function(){});
+    }
+  });
+  document.getElementById("fixed-form").addEventListener("submit", function(e){
+    e.preventDefault();
+    var id = document.getElementById("fixed-edit-id").value;
+    var data = {
+      name: document.getElementById("fixed-name").value.trim(),
+      days: getCheckedDays(document.getElementById("fixed-days")),
+      start: document.getElementById("fixed-start").value,
+      end: document.getElementById("fixed-end").value,
+      location: document.getElementById("fixed-location").value.trim(),
+      people: document.getElementById("fixed-people").value.trim()
+    };
+    if(!data.name || data.days.length===0 || !data.start || !data.end) return;
+    if(!db) return;
+    var ref = id ? db.doc("fixedEvents/"+id) : db.collection("fixedEvents").doc();
+    ref.set(data).catch(function(){});
+    document.getElementById("fixed-form").reset();
+    document.getElementById("fixed-days").querySelectorAll("input").forEach(function(c){c.checked=false;});
+    document.getElementById("fixed-edit-id").value = "";
+    document.getElementById("fixed-form").hidden = true;
+    document.getElementById("fixed-submit").textContent = tr("common.add");
+  });
+
+  /* ================= TASKS ================= */
+  var taskInputListEl = document.getElementById("task-input-list");
+  function fmtDeadlineDisplay(str){
+    if(!str) return tr("common.none");
+    return str.replace("T", " ");
+  }
+  function renderTaskInputList(){
+    taskInputListEl.innerHTML = "";
+    if(state.tasks.length===0){
+      taskInputListEl.innerHTML = '<li class="empty-note">'+esc(tr("task.empty"))+'</li>';
+      return;
+    }
+    var sorted = state.tasks.slice().sort(function(a,b){
+      var da=parseDeadline(a.deadline), db_=parseDeadline(b.deadline);
+      if(da&&db_) return da-db_; if(da) return -1; if(db_) return 1; return 0;
+    });
+    sorted.forEach(function(t){
+      var li = document.createElement("li");
+      li.className = "row-item";
+      var dotColor = t.category==="must" ? "var(--rose)" : "var(--mustard)";
+      li.innerHTML =
+        '<span class="dot" style="background:'+dotColor+'"></span>'+
+        '<div class="info"><span class="name">'+esc(t.name)+(t.completed?' ✓':'')+'</span>'+
+        '<span class="meta">'+CATEGORY_LABEL[t.category]+' · '+esc(tr("task.deadline2"))+' '+esc(fmtDeadlineDisplay(t.deadline))+' · '+t.estimatedMinutes+' '+esc(tr("master.minLabel"))+((+t.repeatPerWeek||1)>1?' '+esc(tr("task.repeatSuffix").replace("{n}",t.repeatPerWeek)):'')+'</span></div>'+
+        '<div class="actions">'+
+          '<button class="icon-btn" data-edit="'+t.id+'" title="'+esc(tr("common.edit"))+'">✎</button>'+
+          '<button class="icon-btn" data-del="'+t.id+'" title="'+esc(tr("common.delete"))+'">✕</button>'+
+        '</div>';
+      taskInputListEl.appendChild(li);
+    });
+  }
+  taskInputListEl.addEventListener("click", function(e){
+    var editBtn = e.target.closest("[data-edit]");
+    var delBtn = e.target.closest("[data-del]");
+    if(editBtn){
+      var t = state.tasks.find(function(x){return x.id===editBtn.dataset.edit;});
+      if(!t) return;
+      document.getElementById("task-form").hidden = false;
+      document.getElementById("task-edit-id").value = t.id;
+      document.getElementById("task-name").value = t.name;
+      document.getElementById("task-deadline").value = t.deadline||"";
+      document.getElementById("task-minutes").value = t.estimatedMinutes;
+      document.getElementById("task-category").value = t.category;
+      document.getElementById("task-pref").value = t.timePreference||"any";
+      document.getElementById("task-day").value = t.preferredDay||"";
+      document.getElementById("task-repeat").value = t.repeatPerWeek||1;
+      document.getElementById("task-minblock").value = t.minBlockMinutes||"";
+      document.getElementById("task-location").value = t.locationOptions||"";
+      document.getElementById("task-splittable").checked = !!t.splittable;
+      document.getElementById("task-notes").value = t.notes||"";
+      document.getElementById("task-submit").textContent = tr("common.update");
+    } else if(delBtn){
+      if(!db) return;
+      db.doc("tasks/"+delBtn.dataset.del).delete().catch(function(){});
+    }
+  });
+  document.getElementById("task-form").addEventListener("submit", function(e){
+    e.preventDefault();
+    var id = document.getElementById("task-edit-id").value;
+    var data = {
+      name: document.getElementById("task-name").value.trim(),
+      deadline: document.getElementById("task-deadline").value,
+      estimatedMinutes: +document.getElementById("task-minutes").value,
+      category: document.getElementById("task-category").value,
+      timePreference: document.getElementById("task-pref").value,
+      preferredDay: document.getElementById("task-day").value,
+      repeatPerWeek: +document.getElementById("task-repeat").value || 1,
+      minBlockMinutes: +document.getElementById("task-minblock").value || null,
+      locationOptions: document.getElementById("task-location").value.trim(),
+      splittable: document.getElementById("task-splittable").checked,
+      notes: document.getElementById("task-notes").value.trim(),
+      completed: id ? undefined : false
+    };
+    if(!data.name || !data.estimatedMinutes) return;
+    if(!db) return;
+    if(id){
+      delete data.completed;
+      db.doc("tasks/"+id).update(data).catch(function(){});
+    } else {
+      db.collection("tasks").add(data).catch(function(){});
+    }
+    document.getElementById("task-form").reset();
+    document.getElementById("task-edit-id").value = "";
+    document.getElementById("task-form").hidden = true;
+    document.getElementById("task-submit").textContent = tr("common.add");
+  });
+
+  /* ================= PREFS: day window ================= */
+  document.getElementById("pref-daytime-save").addEventListener("click", function(){
+    if(!db) return;
+    db.doc("prefs/main").set(Object.assign({}, state.prefs, {
+      dayStart: document.getElementById("pref-daystart").value,
+      dayEnd: document.getElementById("pref-dayend").value
+    })).catch(function(){});
+  });
+
+  /* ================= PREFS: protected blocks ================= */
+  var protectedListEl = document.getElementById("protected-list");
+  function renderProtectedList(){
+    protectedListEl.innerHTML = "";
+    var list = state.prefs.protectedBlocks||[];
+    if(list.length===0){ protectedListEl.innerHTML = '<li class="empty-note">'+esc(tr("prefs.protectedEmpty"))+'</li>'; return; }
+    list.forEach(function(pb, idx){
+      var li = document.createElement("li");
+      li.className = "row-item";
+      var days = (pb.days||[]).map(dayLabel).join(currentLang==="en" ? ", " : "、");
+      li.innerHTML =
+        '<span class="dot" style="background:var(--free-line)"></span>'+
+        '<div class="info"><span class="name">'+esc(pb.label)+'</span>'+
+        '<span class="meta">'+esc(days)+' · '+esc(pb.start)+'–'+esc(pb.end)+'</span></div>'+
+        '<div class="actions">'+
+          '<button class="icon-btn" data-edit="'+idx+'" title="'+esc(tr("common.edit"))+'">✎</button>'+
+          '<button class="icon-btn" data-del="'+idx+'" title="'+esc(tr("common.delete"))+'">✕</button>'+
+        '</div>';
+      protectedListEl.appendChild(li);
+    });
+  }
+  protectedListEl.addEventListener("click", function(e){
+    var editBtn = e.target.closest("[data-edit]");
+    var delBtn = e.target.closest("[data-del]");
+    var list = state.prefs.protectedBlocks||[];
+    if(editBtn){
+      var pb = list[+editBtn.dataset.edit]; if(!pb) return;
+      document.getElementById("protected-form").hidden = false;
+      document.getElementById("protected-edit-id").value = editBtn.dataset.edit;
+      document.getElementById("protected-label").value = pb.label;
+      setCheckedDays(document.getElementById("protected-days"), pb.days);
+      document.getElementById("protected-start").value = pb.start;
+      document.getElementById("protected-end").value = pb.end;
+      document.getElementById("protected-submit").textContent = tr("common.update");
+    } else if(delBtn){
+      if(!db) return;
+      var next = list.slice(); next.splice(+delBtn.dataset.del,1);
+      db.doc("prefs/main").update({protectedBlocks: next}).catch(function(){});
+    }
+  });
+  document.getElementById("protected-form").addEventListener("submit", function(e){
+    e.preventDefault();
+    var idx = document.getElementById("protected-edit-id").value;
+    var entry = {
+      label: document.getElementById("protected-label").value.trim(),
+      days: getCheckedDays(document.getElementById("protected-days")),
+      start: document.getElementById("protected-start").value,
+      end: document.getElementById("protected-end").value
+    };
+    if(!entry.label || entry.days.length===0 || !entry.start || !entry.end) return;
+    if(!db) return;
+    var list = (state.prefs.protectedBlocks||[]).slice();
+    if(idx!==""){ list[+idx] = entry; } else { list.push(entry); }
+    db.doc("prefs/main").update({protectedBlocks: list}).catch(function(){});
+    document.getElementById("protected-form").reset();
+    document.getElementById("protected-days").querySelectorAll("input").forEach(function(c){c.checked=false;});
+    document.getElementById("protected-edit-id").value = "";
+    document.getElementById("protected-form").hidden = true;
+    document.getElementById("protected-submit").textContent = tr("common.add");
+  });
+
+  /* ================= PREFS: sacrifice priority ================= */
+  var priorityListEl = document.getElementById("priority-list");
+  function renderPriorityList(){
+    priorityListEl.innerHTML = "";
+    var list = state.prefs.sacrificePriority||[];
+    if(list.length===0){ priorityListEl.innerHTML = '<li class="empty-note">'+esc(tr("prefs.priorityEmpty"))+'</li>'; return; }
+    list.forEach(function(item, idx){
+      var li = document.createElement("li");
+      li.innerHTML =
+        '<span class="num">'+(idx+1)+'</span>'+
+        '<span class="txt">'+esc(item)+'</span>'+
+        '<span class="mini">'+
+          '<button data-up="'+idx+'" '+(idx===0?"disabled":"")+'>↑</button>'+
+          '<button data-down="'+idx+'" '+(idx===list.length-1?"disabled":"")+'>↓</button>'+
+          '<button data-rm="'+idx+'">✕</button>'+
+        '</span>';
+      priorityListEl.appendChild(li);
+    });
+  }
+  priorityListEl.addEventListener("click", function(e){
+    var btn = e.target.closest("button"); if(!btn||!db) return;
+    var list = (state.prefs.sacrificePriority||[]).slice();
+    if(btn.dataset.up!==undefined){
+      var i=+btn.dataset.up; if(i>0){ var tmp=list[i-1]; list[i-1]=list[i]; list[i]=tmp; }
+    } else if(btn.dataset.down!==undefined){
+      var j=+btn.dataset.down; if(j<list.length-1){ var tmp2=list[j+1]; list[j+1]=list[j]; list[j]=tmp2; }
+    } else if(btn.dataset.rm!==undefined){
+      list.splice(+btn.dataset.rm,1);
+    }
+    db.doc("prefs/main").update({sacrificePriority: list}).catch(function(){});
+  });
+  document.getElementById("priority-add").addEventListener("click", function(){
+    var input = document.getElementById("priority-new");
+    var val = input.value.trim();
+    if(!val || !db) return;
+    var list = (state.prefs.sacrificePriority||[]).slice();
+    list.push(val);
+    db.doc("prefs/main").update({sacrificePriority: list}).catch(function(){});
+    input.value = "";
+  });
+
+  /* ================= OUTPUT RENDER ================= */
+  var weekRangeEl = document.getElementById("week-range");
+  var calendarEl = document.getElementById("calendar");
+  var summaryEl = document.getElementById("summary");
+  var taskListEl = document.getElementById("task-list");
+  var undoBtn = document.getElementById("undo-move-btn");
+  var resetScheduleBtn = document.getElementById("reset-schedule-btn");
+  function currentWeekKey(){
+    return weekDocKey(getWeekDates(state.pinnedWeekStart || new Date(), state.weekOffset));
+  }
+
+  document.getElementById("week-prev").addEventListener("click", function(){ state.weekOffset--; renderOutput(); });
+  document.getElementById("week-next").addEventListener("click", function(){ state.weekOffset++; renderOutput(); });
+  document.getElementById("week-this").addEventListener("click", function(){ state.weekOffset=0; renderOutput(); });
+  undoBtn.addEventListener("click", function(){ undoLastMove(); });
+  resetScheduleBtn.addEventListener("click", function(){ resetToGeneratedSchedule(currentWeekKey()); });
+
+  var currentSchedule = null; // display schedule (baseline + overrides applied) — what's on screen/PDF
+  var currentBaseline = null; // raw algorithm output, no overrides — used for popover "original" info and reset
+
+  function renderOutput(){
+    var weekBase = state.pinnedWeekStart || new Date();
+    var weekDates = getWeekDates(weekBase, state.weekOffset);
+    var pinnedSuffix = state.pinnedWeekStart ? tr("output.pinnedSuffix")+(state.weekOffset!==0?((currentLang==="en"?", ":"，")+(state.weekOffset>0?"+"+state.weekOffset:state.weekOffset)+(currentLang==="en"?" wk":" 週")):"")+"）" : (state.weekOffset===0?tr("output.thisWeekSuffix"):"");
+    weekRangeEl.textContent = fmtDateShort(weekDates[0])+" ("+dayLabel("mon")+") – "+fmtDateShort(weekDates[6])+" ("+dayLabel("sun")+")"+pinnedSuffix;
+
+    var weekKey = weekDocKey(weekDates);
+    if(currentOverridesKey !== weekKey){
+      state.overrides = {};
+      undoStack.length = 0;
+      updateManualButtons();
+      loadOverrides(weekDates);
+    }
+
+    var baseline = schedule(weekDates, state.prefs, state.fixedEvents, state.tasks);
+    currentBaseline = baseline;
+    var result = applyOverrides(baseline, state.overrides);
+    currentSchedule = result;
+    var dayStart = result.dayStart, dayEnd = result.dayEnd, span = dayEnd-dayStart;
+
+    if(result.shortfalls.length===0){
+      summaryEl.className = "summary ok";
+      summaryEl.innerHTML = esc(tr("summary.ok"));
+    } else {
+      summaryEl.className = "summary warn";
+      var items = result.shortfalls.map(function(s){
+        return s.kind==="task"
+          ? "<li>"+esc(tr("summary.taskShort",{name:s.name,min:s.minutes}))+"</li>"
+          : "<li>"+esc(tr("summary.repeatMissing",{name:s.name,n:s.missing}))+"</li>";
+      }).join("");
+      summaryEl.innerHTML = esc(tr("summary.warnPrefix"))+"<ul>"+items+"</ul>";
+    }
+
+    calendarEl.innerHTML = "";
+    var axis = document.createElement("div");
+    axis.className = "axis";
+    for(var h=Math.ceil(dayStart/60); h*60<=dayEnd; h++){
+      var top = (h*60-dayStart)/span*100;
+      var tick = document.createElement("span");
+      tick.className = "tick";
+      tick.style.top = top+"%";
+      tick.textContent = (h<10?"0":"")+h;
+      axis.appendChild(tick);
+    }
+    calendarEl.appendChild(axis);
+
+    var todayKey = null;
+    if(!state.pinnedWeekStart && state.weekOffset===0){
+      var today = new Date();
+      result.days.forEach(function(day){ if(sameDate(day.date, today)) todayKey = day.key; });
+    }
+
+    result.days.forEach(function(day){
+      var col = document.createElement("div");
+      col.className = "day-col" + (day.key===todayKey ? " today" : "");
+      var head = document.createElement("div");
+      head.className = "day-head";
+      head.innerHTML = '<span class="dow">'+dayLabel(day.key)+'</span><span class="date">'+fmtDateShort(day.date)+'</span>';
+      col.appendChild(head);
+      var body = document.createElement("div");
+      body.className = "day-body";
+      body.dataset.dayKey = day.key;
+      day.blocks.forEach(function(b){
+        var top = (b.start-dayStart)/span*100;
+        var height = (b.end-b.start)/span*100;
+        var div = document.createElement("div");
+        div.className = "block "+b.type+(b.movable?" movable":" locked")+(b.manual?" manual":"")+(b.conflict?" conflict":"");
+        div.style.top = top+"%";
+        div.style.height = Math.max(height, 2.2)+"%";
+        div.title = b.detail;
+        if(b.taskId){ div.dataset.taskId = b.taskId; if(taskCompletedMap[b.taskId]) div.classList.add("done"); }
+        if(b.blockKey){ div.dataset.blockKey = b.blockKey; div.dataset.dayKey = day.key; }
+        div.innerHTML = '<span class="lbl">'+esc(b.label)+'</span>'+(b.manual?'<span class="adj-badge">'+esc(tr("adj.badge"))+'</span>':'');
+        if(b.movable) wireBlockInteraction(div, day.key, b);
+        body.appendChild(div);
+      });
+      col.appendChild(body);
+      calendarEl.appendChild(col);
+    });
+
+    renderMasterList();
+    renderFreeTime(result);
+    if(!currentReflectKey || currentReflectKey !== weekDocKey(weekDates)) loadReflection(weekDates);
+  }
+
+  var taskCompletedMap = {};
+
+  function renderMasterList(){
+    var sorted = state.tasks.slice().sort(function(a,b){
+      var da=parseDeadline(a.deadline), db_=parseDeadline(b.deadline);
+      if(da&&db_) return da-db_; if(da) return -1; if(db_) return 1; return 0;
+    });
+    taskListEl.innerHTML = "";
+    if(sorted.length===0){
+      taskListEl.innerHTML = '<li class="empty-note">'+esc(tr("master.empty"))+'</li>';
+      return;
+    }
+    var now = new Date();
+    var plannedMap = {};
+    if(currentSchedule){
+      currentSchedule.days.forEach(function(day){
+        day.blocks.forEach(function(b){
+          if(!b.taskId) return;
+          (plannedMap[b.taskId] = plannedMap[b.taskId]||[]).push(dayLabel(day.key)+" "+fmtMin(b.start)+"–"+fmtMin(b.end));
+        });
+      });
+    }
+    sorted.forEach(function(t){
+      taskCompletedMap[t.id] = !!t.completed;
+      var deadline = parseDeadline(t.deadline);
+      var overdue = deadline && deadline < now && !t.completed;
+      var planned = plannedMap[t.id];
+      var status = t.completed ? tr("status.completed") : overdue ? tr("status.overdue") : planned ? tr("status.scheduled") : tr("status.notScheduled");
+      var row = document.createElement("li");
+      row.className = "task-row" + (t.completed ? " completed" : "");
+      row.innerHTML =
+        '<button class="check" data-toggle="'+t.id+'" aria-checked="'+!!t.completed+'" aria-label="'+esc(tr("master.markComplete"))+esc(t.name)+'">'+(t.completed?"✓":"")+'</button>'+
+        '<div class="task-body">'+
+          '<span class="task-name">'+esc(t.name)+'</span>'+
+          '<div class="task-meta">'+
+            '<span class="pill '+t.category+'">'+CATEGORY_LABEL[t.category]+'</span>'+
+            '<span class="pill'+(overdue?' overdue':'')+'">'+status+'</span>'+
+            '<span>'+esc(tr("task.deadline2"))+' '+esc(fmtDeadlineDisplay(t.deadline))+'</span>'+
+            '<span>'+t.estimatedMinutes+' '+esc(tr("master.minLabel"))+((+t.repeatPerWeek||1)>1?' × '+t.repeatPerWeek:'')+'</span>'+
+            (planned ? '<span>'+esc(tr("master.scheduledAtLabel"))+esc(planned.join(currentLang==="en"?", ":"、"))+'</span>' : '')+
+          '</div>'+
+          (t.notes ? '<div class="task-meta" style="margin-top:2px"><span>'+esc(tr("master.notesLabel"))+esc(t.notes)+'</span></div>' : '')+
+        '</div>';
+      taskListEl.appendChild(row);
+    });
+  }
+  var freetimeListEl = document.getElementById("freetime-list");
+  function suggestFor(duration){
+    if(duration < 60) return tr("freetime.ideaShort");
+    if(duration < 150) return tr("freetime.ideaMedium");
+    return tr("freetime.ideaLarge");
+  }
+  function dayPartForMinute(min){
+    if(min < 12*60) return tr("common.morning");
+    if(min < 18*60) return tr("common.afternoon");
+    return tr("common.evening");
+  }
+  // Concise, actionable suggestions only (spec §3): at most one pick per day —
+  // the day's single largest open block — never an exhaustive listing of every gap.
+  // Blocks >= 3h are described by day-part ("Saturday afternoon") rather than exact
+  // clock times, since a huge open block reads more naturally that way.
+  function renderFreeTime(result){
+    var picks = [];
+    result.days.forEach(function(day){
+      var best = null;
+      day.gaps.forEach(function(g){
+        var dur = g.end-g.start;
+        if(dur < 30) return;
+        if(!best || dur > best.dur) best = {day:day, start:g.start, end:g.end, dur:dur};
+      });
+      if(best) picks.push(best);
+    });
+    freetimeListEl.innerHTML = "";
+    if(picks.length===0){
+      freetimeListEl.innerHTML = '<li class="empty-note">'+esc(tr("freetime.empty"))+'</li>';
+      return;
+    }
+    picks.forEach(function(r){
+      var li = document.createElement("li");
+      li.className = "freetime-row";
+      var durText = r.dur>=60 ? (Math.floor(r.dur/60)+tr("freetime.hourUnit")+(r.dur%60?(r.dur%60)+tr("freetime.minShortUnit"):"")) : r.dur+tr("freetime.minUnit");
+      var when = r.dur >= 180
+        ? tr("freetime.dayPart", {day: dayLabel(r.day.key), part: dayPartForMinute(Math.floor((r.start+r.end)/2))})
+        : dayLabel(r.day.key)+" "+fmtMin(r.start)+"–"+fmtMin(r.end);
+      li.innerHTML =
+        '<span class="when">'+esc(when)+'</span>'+
+        '<span class="dur">'+esc(durText)+'</span>'+
+        '<span class="ideas">'+esc(suggestFor(r.dur))+'</span>';
+      freetimeListEl.appendChild(li);
+    });
+  }
+
+  /* ================= MANUAL ADJUSTMENT: drag-and-drop + popover ================= */
+  var SNAP = 15; // minutes — every drag/edit lands on a 15-min increment (spec §8)
+  function snapMinutes(m){ return Math.round(m/SNAP)*SNAP; }
+
+  function findDisplayedBlock(blockKey){
+    if(!currentSchedule) return null;
+    for(var i=0;i<currentSchedule.days.length;i++){
+      var day = currentSchedule.days[i];
+      for(var j=0;j<day.blocks.length;j++){
+        if(day.blocks[j].blockKey===blockKey) return {day:day, block:day.blocks[j]};
+      }
+    }
+    return null;
+  }
+
+  // Validates a candidate (day,start) for one block against everything else
+  // currently on screen (fixed events, protected blocks, other task blocks),
+  // the schedulable day bounds, and — for a Must task — its deadline. Shared by
+  // both the drag-drop commit path and the popover's time editor (spec §7/§9).
+  function validateMove(blockKey, targetDayKey, start){
+    var found = findDisplayedBlock(blockKey);
+    if(!found) return {ok:false, reasonKey:"drag.noChange"};
+    var block = found.block;
+    var dur = block.end - block.start;
+    var end = start + dur;
+    var dayStart = currentSchedule.dayStart, dayEnd = currentSchedule.dayEnd;
+    if(start < dayStart || end > dayEnd) return {ok:false, reasonKey:"drag.outOfBounds"};
+
+    var targetDay = null;
+    for(var i=0;i<currentSchedule.days.length;i++){ if(currentSchedule.days[i].key===targetDayKey) targetDay = currentSchedule.days[i]; }
+    if(!targetDay) return {ok:false, reasonKey:"drag.outOfBounds"};
+
+    if(targetDayKey===found.day.key && start===block.start) return {ok:false, reasonKey:"drag.noChange"};
+
+    for(var k=0;k<targetDay.blocks.length;k++){
+      var other = targetDay.blocks[k];
+      if(other.blockKey===blockKey) continue;
+      if(start < other.end && end > other.start){
+        if(other.type==="fixed") return {ok:false, reasonKey:"drag.overlapFixed", vars:{name:other.label}};
+        if(other.type==="free-protected") return {ok:false, reasonKey:"drag.overlapProtected", vars:{name:other.label}};
+        return {ok:false, reasonKey:"drag.overlapTask", vars:{name:other.label}};
+      }
+    }
+
+    if(block.type==="must"){
+      var task = state.tasks.find(function(x){ return x.id===block.taskId; });
+      var deadline = task ? parseDeadline(task.deadline) : null;
+      if(deadline){
+        var dDate = dateOnly(deadline).getTime();
+        var tDate = dateOnly(targetDay.date).getTime();
+        var overDeadline = tDate > dDate || (tDate===dDate && end > (deadline.getHours()*60+deadline.getMinutes()));
+        if(overDeadline) return {ok:false, reasonKey:"drag.deadlineViolation", vars:{name:block.label, deadline: fmtDeadlineDisplay(task.deadline)}};
+      }
+    }
+
+    return {ok:true};
+  }
+
+  var dragToastEl = null;
+  function showDragToast(msg){
+    if(!dragToastEl){
+      dragToastEl = document.createElement("div");
+      dragToastEl.className = "drag-toast";
+      document.body.appendChild(dragToastEl);
+    }
+    dragToastEl.textContent = msg;
+    clearTimeout(showDragToast._t);
+    showDragToast._t = setTimeout(function(){ if(dragToastEl) dragToastEl.remove(); dragToastEl=null; }, 2600);
+  }
+
+  function wireBlockInteraction(div, dayKey, block){
+    div.addEventListener("pointerdown", function(e){
+      if(e.button!==undefined && e.button!==0) return;
+      var startX = e.clientX, startY = e.clientY;
+      var dragging = false;
+      var ghost = null;
+      var lastCandidate = null; // {dayKey, start, valid}
+      var body = div.parentElement;
+      var dayStart = currentSchedule.dayStart, dayEnd = currentSchedule.dayEnd, span = dayEnd-dayStart;
+      var grabOffsetRatio = (e.clientY - body.getBoundingClientRect().top) / body.getBoundingClientRect().height - (block.start-dayStart)/span;
+
+      function pointToCandidate(clientX, clientY){
+        var el = document.elementFromPoint(clientX, clientY);
+        var col = el && el.closest(".day-body");
+        if(!col) return null;
+        var rect = col.getBoundingClientRect();
+        var ratio = (clientY - rect.top)/rect.height - grabOffsetRatio;
+        var minute = dayStart + ratio*span;
+        minute = snapMinutes(minute);
+        return {dayKey: col.dataset.dayKey, start: minute};
+      }
+
+      function onMove(ev){
+        var dx = ev.clientX-startX, dy = ev.clientY-startY;
+        if(!dragging && (Math.abs(dx)>4 || Math.abs(dy)>4)){
+          dragging = true;
+          div.classList.add("dragging");
+          try{ div.setPointerCapture(e.pointerId); }catch(err){}
+        }
+        if(!dragging) return;
+        var cand = pointToCandidate(ev.clientX, ev.clientY);
+        if(!cand){ if(ghost){ghost.remove(); ghost=null;} lastCandidate=null; return; }
+        var dur = block.end-block.start;
+        var check = validateMove(block.blockKey, cand.dayKey, cand.start);
+        var valid = check.ok || (check.reasonKey==="drag.noChange");
+        lastCandidate = {dayKey:cand.dayKey, start:cand.start, valid: check.ok};
+        var targetBody = document.querySelector('.day-body[data-day-key="'+cand.dayKey+'"]');
+        if(targetBody){
+          if(!ghost || ghost.parentElement!==targetBody){
+            if(ghost) ghost.remove();
+            ghost = document.createElement("div");
+            ghost.className = "drop-ghost";
+            targetBody.appendChild(ghost);
+          }
+          ghost.className = "drop-ghost"+(valid?"":" invalid");
+          ghost.style.top = ((cand.start-dayStart)/span*100)+"%";
+          ghost.style.height = Math.max((dur/span*100), 2.2)+"%";
+        }
+      }
+
+      function onUp(ev){
+        document.removeEventListener("pointermove", onMove);
+        document.removeEventListener("pointerup", onUp);
+        div.classList.remove("dragging");
+        if(ghost){ ghost.remove(); ghost=null; }
+        if(!dragging){
+          openBlockPopover(dayKey, block);
+          return;
+        }
+        if(!lastCandidate){ return; }
+        var check = validateMove(block.blockKey, lastCandidate.dayKey, lastCandidate.start);
+        if(!check.ok){
+          if(check.reasonKey!=="drag.noChange") showDragToast(tr(check.reasonKey, check.vars));
+          return;
+        }
+        commitMove(currentWeekKey(), block.blockKey, lastCandidate.dayKey, lastCandidate.start);
+      }
+
+      document.addEventListener("pointermove", onMove);
+      document.addEventListener("pointerup", onUp);
+    });
+  }
+
+  /* ---------------- block detail popover ---------------- */
+  var bpBackdrop = document.getElementById("block-popover-backdrop");
+  var bpName = document.getElementById("bp-name");
+  var bpCategory = document.getElementById("bp-category");
+  var bpScheduled = document.getElementById("bp-scheduled");
+  var bpDuration = document.getElementById("bp-duration");
+  var bpDeadlineRow = document.getElementById("bp-deadline-row");
+  var bpDeadline = document.getElementById("bp-deadline");
+  var bpOriginRow = document.getElementById("bp-origin-row");
+  var bpOrigin = document.getElementById("bp-origin");
+  var bpDaySelect = document.getElementById("bp-day-select");
+  var bpTimeInput = document.getElementById("bp-time-input");
+  var bpError = document.getElementById("bp-error");
+  var bpSave = document.getElementById("bp-save");
+  var bpClose = document.getElementById("bp-close");
+  var bpCurrent = null; // {dayKey, block}
+
+  function openBlockPopover(dayKey, block){
+    bpCurrent = {dayKey:dayKey, block:block};
+    bpName.textContent = block.label;
+    bpCategory.textContent = CATEGORY_LABEL[block.type] || block.type;
+    bpScheduled.textContent = dayLabel(dayKey)+" "+fmtMin(block.start)+"–"+fmtMin(block.end);
+    bpDuration.textContent = (block.end-block.start)+" "+tr("master.minLabel");
+    var task = block.taskId ? state.tasks.find(function(x){ return x.id===block.taskId; }) : null;
+    if(task && task.deadline){
+      bpDeadlineRow.hidden = false;
+      bpDeadline.textContent = fmtDeadlineDisplay(task.deadline);
+    } else {
+      bpDeadlineRow.hidden = true;
+    }
+    bpOriginRow.hidden = false;
+    bpOrigin.textContent = block.manual ? tr("popover.originManual") : tr("popover.originAuto");
+    bpDaySelect.innerHTML = DAY_KEYS.map(function(k){ return '<option value="'+k+'"'+(k===dayKey?" selected":"")+'>'+esc(dayLabel(k))+'</option>'; }).join("");
+    bpTimeInput.value = fmtMin(block.start);
+    bpError.textContent = "";
+    var editable = !!block.movable;
+    bpDaySelect.disabled = !editable;
+    bpTimeInput.disabled = !editable;
+    bpSave.hidden = !editable;
+    bpBackdrop.hidden = false;
+  }
+  function closeBlockPopover(){
+    bpBackdrop.hidden = true;
+    bpCurrent = null;
+  }
+  bpClose.addEventListener("click", closeBlockPopover);
+  bpBackdrop.addEventListener("click", function(e){ if(e.target===bpBackdrop) closeBlockPopover(); });
+  bpSave.addEventListener("click", function(){
+    if(!bpCurrent) return;
+    var day = bpDaySelect.value;
+    var mins = toMinutes(bpTimeInput.value);
+    if(mins==null){ bpError.textContent = tr("v.dayStart",{v:bpTimeInput.value}); return; }
+    var start = snapMinutes(mins);
+    var check = validateMove(bpCurrent.block.blockKey, day, start);
+    if(!check.ok){
+      bpError.textContent = tr(check.reasonKey, check.vars);
+      return;
+    }
+    commitMove(currentWeekKey(), bpCurrent.block.blockKey, day, start);
+    closeBlockPopover();
+  });
+
+  /* ================= WEEKLY REFLECTION ================= */
+  var reflectFields = Array.prototype.slice.call(document.querySelectorAll("[data-key]"));
+  var reflectTimer = null;
+  var currentReflectKey = null;
+  function weekDocKey(weekDates){
+    var d = weekDates[0];
+    return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0");
+  }
+
+  /* ---------------- manual adjustment: overrides doc ---------------- */
+  function loadOverrides(weekDates){
+    var key = weekDocKey(weekDates);
+    currentOverridesKey = key;
+    if(!db){ state.overrides = {}; return; }
+    db.doc("overrides/"+key).get().then(function(snap){
+      if(currentOverridesKey !== key) return; // navigated away meanwhile
+      var data = snap.data() || {};
+      state.overrides = data.moves || {};
+      undoStack.length = 0;
+      updateManualButtons();
+      if(!tabOutput.hidden) renderOutput();
+    }).catch(function(){});
+  }
+  function saveOverrides(weekKey){
+    if(!db) return;
+    db.doc("overrides/"+weekKey).set({moves: state.overrides}).catch(function(){});
+  }
+  function updateManualButtons(){
+    var hasOverrides = Object.keys(state.overrides||{}).length>0;
+    undoBtn.disabled = undoStack.length===0;
+    resetScheduleBtn.disabled = !hasOverrides;
+  }
+  // Commits a manual move: applied to state.overrides, pushed to the undo stack,
+  // written to db, and re-rendered. Used by both drag-drop and the popover's
+  // time editor so they share one validated commit path (spec §13/§14).
+  function commitMove(weekKey, blockKey, day, start){
+    var prev = Object.prototype.hasOwnProperty.call(state.overrides, blockKey) ? state.overrides[blockKey] : undefined;
+    undoStack.push({weekKey:weekKey, blockKey:blockKey, prevValue:prev});
+    state.overrides[blockKey] = {day:day, start:start};
+    saveOverrides(weekKey);
+    updateManualButtons();
+    renderOutput();
+  }
+  function undoLastMove(){
+    if(undoStack.length===0) return;
+    var entry = undoStack.pop();
+    if(entry.prevValue===undefined) delete state.overrides[entry.blockKey];
+    else state.overrides[entry.blockKey] = entry.prevValue;
+    saveOverrides(entry.weekKey);
+    updateManualButtons();
+    renderOutput();
+  }
+  function resetToGeneratedSchedule(weekKey){
+    state.overrides = {};
+    undoStack.length = 0;
+    saveOverrides(weekKey);
+    updateManualButtons();
+    renderOutput();
+  }
+  function loadReflection(weekDates){
+    currentReflectKey = weekDocKey(weekDates);
+    reflectFields.forEach(function(f){ f.value = ""; });
+    if(!db) return;
+    db.doc("reflections/"+currentReflectKey).get().then(function(snap){
+      if(currentReflectKey !== weekDocKey(weekDates)) return; // navigated away meanwhile
+      var data = snap.data() || {};
+      reflectFields.forEach(function(f){ f.value = data[f.dataset.key] || ""; });
+    }).catch(function(){});
+  }
+  reflectFields.forEach(function(f){
+    f.addEventListener("input", function(){
+      clearTimeout(reflectTimer);
+      var key = currentReflectKey;
+      reflectTimer = setTimeout(function(){
+        if(!db || !key) return;
+        var payload = {};
+        reflectFields.forEach(function(x){ payload[x.dataset.key] = x.value; });
+        db.doc("reflections/"+key).set(payload).catch(function(){});
+      }, 500);
+    });
+  });
+
+  /* ================= PDF EXPORT ================= */
+  var pdfLibsPromise = null;
+  function loadScript(src){
+    return new Promise(function(resolve, reject){
+      var s = document.createElement("script");
+      s.src = src; s.onload = resolve; s.onerror = reject;
+      document.head.appendChild(s);
+    });
+  }
+  function ensurePdfLibs(){
+    if(!pdfLibsPromise){
+      pdfLibsPromise = Promise.all([
+        loadScript("https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"),
+        loadScript("https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js")
+      ]);
+    }
+    return pdfLibsPromise;
+  }
+  document.getElementById("pdf-download").addEventListener("click", function(){
+    var btn = this;
+    var oldText = btn.textContent;
+    btn.textContent = tr("output.pdfPreparing"); btn.disabled = true;
+    ensurePdfLibs().then(function(){
+      return claude.use("downloads").then(function(downloads){
+        if(!downloads){ btn.textContent = oldText; btn.disabled = false; return; }
+        var page1 = document.getElementById("pdf-page1");
+        var page2 = document.getElementById("pdf-page2");
+        var opts = { backgroundColor: getComputedStyle(document.body).backgroundColor, scale: 2, useCORS: true,
+          ignoreElements: function(el){ return el && el.dataset && el.dataset.nopdf === "1"; } };
+        return Promise.all([window.html2canvas(page1, opts), window.html2canvas(page2, opts)]).then(function(canvases){
+          var jsPDF = window.jspdf.jsPDF;
+          var pdf = new jsPDF({ orientation: "portrait", unit: "pt", format: "a4" });
+          var pageW = pdf.internal.pageSize.getWidth();
+          var pageH = pdf.internal.pageSize.getHeight();
+          var margin = 24;
+          canvases.forEach(function(canvas, i){
+            if(i>0) pdf.addPage();
+            var imgW = pageW - margin*2;
+            var imgH = canvas.height * (imgW/canvas.width);
+            var y = margin;
+            if(imgH > pageH - margin*2){
+              // scale down to fit one page height, centered
+              var scale = (pageH - margin*2) / imgH;
+              imgH = imgH*scale; var imgW2 = imgW*scale;
+              pdf.addImage(canvas.toDataURL("image/png"), "PNG", margin + (imgW-imgW2)/2, y, imgW2, imgH);
+            } else {
+              pdf.addImage(canvas.toDataURL("image/png"), "PNG", margin, y, imgW, imgH);
+            }
+          });
+          var weekDates = getWeekDates(state.pinnedWeekStart || new Date(), state.weekOffset);
+          var fname = "Weekly_Planner_"+isoDate(weekDates[0])+"_to_"+isoDate(weekDates[6])+".pdf";
+          var blob = pdf.output("blob");
+          return downloads.save({ filename: fname, data: blob });
+        });
+      });
+    }).catch(function(err){ console.warn("pdf export failed", err); }).then(function(){
+      btn.textContent = oldText; btn.disabled = false;
+    });
+  });
+  function isoDate(d){ return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0"); }
+
+  taskListEl.addEventListener("click", function(e){
+    var btn = e.target.closest("[data-toggle]"); if(!btn||!db) return;
+    var cur = btn.getAttribute("aria-checked")==="true";
+    db.doc("tasks/"+btn.dataset.toggle).update({completed: !cur}).catch(function(){});
+  });
+
+  /* ================= DEV / TEST TOOLS =================
+     Deterministic JSON import/export for reproducible testing across planner
+     versions. Imported data is written into the exact same fixedEvents/tasks/
+     prefs collections the form UI writes to and runs through the exact same
+     schedule() function — there is no separate code path for JSON input. */
+
+  function buildDevSchemaExample(){
+    return {
+      testCaseName: "Main Weekly Planner Test",
+      weekStart: "2026-09-28",
+      preferences: { dayStart: "08:00", dayEnd: "22:00", sacrificePriority: currentLang==="en" ? ["optional task", "Reading"] : ["optional 任務", "閱讀"] },
+      protectedBlocks: [
+        { label: currentLang==="en" ? "Friday night off" : "週五晚上放空", days: ["fri"], start: "19:00", end: "23:00" }
+      ],
+      fixedEvents: [
+        { name: currentLang==="en" ? "Operating Systems Class" : "作業系統課", days: ["mon"], start: "09:00", end: "12:00", location: currentLang==="en" ? "University" : "學校", people: "" }
+      ],
+      tasks: [
+        {
+          name: currentLang==="en" ? "OS Assignment" : "作業系統作業", category: "must", deadline: "2026-10-01T23:59",
+          estimatedMinutes: 240, repeatPerWeek: 1, splittable: true, minBlockMinutes: 60,
+          timePreference: "morning", preferredDay: null, locationOptions: currentLang==="en" ? ["Library", "Home"] : ["圖書館", "家裡"],
+          notes: "", completed: false
+        },
+        {
+          name: currentLang==="en" ? "Running" : "跑步", category: "want", deadline: null,
+          estimatedMinutes: 60, repeatPerWeek: 2, splittable: false, minBlockMinutes: 60,
+          timePreference: "any", preferredDay: null, locationOptions: currentLang==="en" ? ["Outdoor", "Gym"] : ["戶外", "健身房"],
+          notes: "", completed: false
+        }
+      ]
+    };
+  }
+  function buildDevSchemaText(){
+    var devSchemaEl = document.getElementById("dev-schema-example");
+    if(!devSchemaEl) return;
+    devSchemaEl.textContent =
+      "// required: weekStart. everything else optional (defaults noted below).\n"+
+      "// categories: must | want | optional\n"+
+      "// timePreference: any | morning | afternoon | evening (default any)\n"+
+      "// days codes: mon tue wed thu fri sat sun\n"+
+      "// task.deadline: null, \"YYYY-MM-DD\", or \"YYYY-MM-DDTHH:MM\" (default: no deadline)\n"+
+      "// task.repeatPerWeek: default 1 · task.splittable: default false\n"+
+      "// task.minBlockMinutes: default = estimatedMinutes · task.locationOptions: array, default []\n"+
+      "// task.notes: default \"\" · task.completed: default false\n\n"+
+      JSON.stringify(buildDevSchemaExample(), null, 2);
+  }
+  buildDevSchemaText();
+
+  function isPlainObject(v){ return v!=null && typeof v==="object" && !Array.isArray(v); }
+  function isValidHHMM(s){ return typeof s==="string" && /^([01]\d|2[0-3]):([0-5]\d)$/.test(s); }
+  function isValidDateOnly(s){
+    if(typeof s!=="string" || !/^\d{4}-\d{2}-\d{2}$/.test(s)) return false;
+    var p = s.split("-").map(Number);
+    var d = new Date(p[0], p[1]-1, p[2]);
+    return d.getFullYear()===p[0] && d.getMonth()===p[1]-1 && d.getDate()===p[2];
+  }
+  function isValidDeadline(s){
+    if(typeof s!=="string" || s==="") return false;
+    if(s.length<=10) return isValidDateOnly(s);
+    var m = /^(\d{4}-\d{2}-\d{2})T([01]\d|2[0-3]):([0-5]\d)$/.exec(s);
+    return !!m && isValidDateOnly(m[1]);
+  }
+
+  // Validates + normalizes a raw parsed JSON test case. Returns {errors:[...]} on any
+  // problem (nothing is loaded), or {errors:[], data:{...}} ready to write into state/db.
+  function validateTestCase(raw){
+    var errors = [];
+    function fail(msg){ errors.push(msg); }
+
+    if(!isPlainObject(raw)){
+      return { errors: [tr("v.notObject")] };
+    }
+
+    var testCaseName = typeof raw.testCaseName==="string" ? raw.testCaseName : "";
+
+    if(!raw.weekStart || !isValidDateOnly(raw.weekStart)){
+      fail(tr("v.weekStart",{v:JSON.stringify(raw.weekStart)}));
+    }
+
+    var prefsIn = raw.preferences;
+    var prefsOut = { dayStart:"07:30", dayEnd:"23:30", protectedBlocks:[], sacrificePriority:[] };
+    if(prefsIn!==undefined){
+      if(!isPlainObject(prefsIn)){
+        fail(tr("v.prefsNotObject"));
+      } else {
+        if(prefsIn.dayStart!==undefined || prefsIn.dayEnd!==undefined){
+          if(!isValidHHMM(prefsIn.dayStart)) fail(tr("v.dayStart",{v:JSON.stringify(prefsIn.dayStart)}));
+          if(!isValidHHMM(prefsIn.dayEnd)) fail(tr("v.dayEnd",{v:JSON.stringify(prefsIn.dayEnd)}));
+          if(isValidHHMM(prefsIn.dayStart) && isValidHHMM(prefsIn.dayEnd) && toMinutes(prefsIn.dayStart)>=toMinutes(prefsIn.dayEnd)){
+            fail(tr("v.dayStartAfterEnd"));
+          }
+          prefsOut.dayStart = prefsIn.dayStart; prefsOut.dayEnd = prefsIn.dayEnd;
+        }
+        if(prefsIn.sacrificePriority!==undefined){
+          if(!Array.isArray(prefsIn.sacrificePriority) || prefsIn.sacrificePriority.some(function(x){return typeof x!=="string";})){
+            fail(tr("v.sacrificePriorityType"));
+          } else prefsOut.sacrificePriority = prefsIn.sacrificePriority;
+        }
+      }
+    }
+
+    var protectedOut = [];
+    if(raw.protectedBlocks!==undefined){
+      if(!Array.isArray(raw.protectedBlocks)){
+        fail(tr("v.protectedBlocksType"));
+      } else {
+        raw.protectedBlocks.forEach(function(pb, i){
+          var tag = "protectedBlocks["+i+"]";
+          if(!isPlainObject(pb)){ fail(tr("v.itemNotObject",{tag:tag})); return; }
+          if(!pb.label || typeof pb.label!=="string"){ fail(tr("v.labelRequired",{tag:tag})); return; }
+          if(!Array.isArray(pb.days) || pb.days.length===0 || pb.days.some(function(d){return DAY_KEYS.indexOf(d)===-1;})){
+            fail(tr("v.daysInvalid",{tag:tag,name:pb.label,days:DAY_KEYS.join("/")})); return;
+          }
+          if(!isValidHHMM(pb.start) || !isValidHHMM(pb.end) || toMinutes(pb.start)>=toMinutes(pb.end)){
+            fail(tr("v.startEndInvalid",{tag:tag,name:pb.label})); return;
+          }
+          protectedOut.push({ label: pb.label, days: pb.days.slice(), start: pb.start, end: pb.end });
+        });
+      }
+    }
+    prefsOut.protectedBlocks = protectedOut;
+
+    var fixedOut = [];
+    if(raw.fixedEvents!==undefined){
+      if(!Array.isArray(raw.fixedEvents)){
+        fail(tr("v.fixedEventsType"));
+      } else {
+        raw.fixedEvents.forEach(function(ev, i){
+          var tag = "fixedEvents["+i+"]";
+          if(!isPlainObject(ev)){ fail(tr("v.itemNotObject",{tag:tag})); return; }
+          if(!ev.name || typeof ev.name!=="string"){ fail(tr("v.nameRequired",{tag:tag})); return; }
+          if(!Array.isArray(ev.days) || ev.days.length===0 || ev.days.some(function(d){return DAY_KEYS.indexOf(d)===-1;})){
+            fail(tr("v.daysInvalid",{tag:tag,name:ev.name,days:DAY_KEYS.join("/")})); return;
+          }
+          if(!isValidHHMM(ev.start) || !isValidHHMM(ev.end) || toMinutes(ev.start)>=toMinutes(ev.end)){
+            fail(tr("v.startEndInvalid",{tag:tag,name:ev.name})); return;
+          }
+          fixedOut.push({
+            name: ev.name, days: ev.days.slice(), start: ev.start, end: ev.end,
+            location: typeof ev.location==="string" ? ev.location : "",
+            people: typeof ev.people==="string" ? ev.people : ""
+          });
+        });
+      }
+    }
+
+    var tasksOut = [];
+    if(raw.tasks!==undefined){
+      if(!Array.isArray(raw.tasks)){
+        fail(tr("v.tasksType"));
+      } else {
+        raw.tasks.forEach(function(t, i){
+          var tag = "tasks["+i+"]";
+          var label = (t && t.name) ? " (\""+t.name+"\")" : "";
+          if(!isPlainObject(t)){ fail(tr("v.itemNotObject",{tag:tag})); return; }
+          if(!t.name || typeof t.name!=="string"){ fail(tr("v.nameRequired",{tag:tag})); return; }
+          label = " (\""+t.name+"\")";
+          if(["must","want","optional"].indexOf(t.category)===-1){
+            fail(tr("v.categoryInvalid",{tag:tag,label:label,v:JSON.stringify(t.category)})); return;
+          }
+          var deadline = "";
+          if(t.deadline!==undefined && t.deadline!==null && t.deadline!==""){
+            if(!isValidDeadline(t.deadline)){ fail(tr("v.deadlineInvalid",{tag:tag,label:label,v:JSON.stringify(t.deadline)})); return; }
+            deadline = t.deadline;
+          }
+          if(typeof t.estimatedMinutes!=="number" || !isFinite(t.estimatedMinutes) || t.estimatedMinutes<=0){
+            fail(tr("v.estimatedMinutesInvalid",{tag:tag,label:label,v:JSON.stringify(t.estimatedMinutes)})); return;
+          }
+          var repeatPerWeek = 1;
+          if(t.repeatPerWeek!==undefined){
+            if(typeof t.repeatPerWeek!=="number" || !Number.isInteger(t.repeatPerWeek) || t.repeatPerWeek<1){
+              fail(tr("v.repeatPerWeekInvalid",{tag:tag,label:label,v:JSON.stringify(t.repeatPerWeek)})); return;
+            }
+            repeatPerWeek = t.repeatPerWeek;
+          }
+          var splittable = t.splittable===true;
+          if(t.splittable!==undefined && typeof t.splittable!=="boolean"){
+            fail(tr("v.splittableInvalid",{tag:tag,label:label})); return;
+          }
+          var minBlockMinutes = null;
+          if(t.minBlockMinutes!==undefined && t.minBlockMinutes!==null){
+            if(typeof t.minBlockMinutes!=="number" || !isFinite(t.minBlockMinutes) || t.minBlockMinutes<=0){
+              fail(tr("v.minBlockMinutesInvalid",{tag:tag,label:label,v:JSON.stringify(t.minBlockMinutes)})); return;
+            }
+            if(t.minBlockMinutes > t.estimatedMinutes){
+              fail(tr("v.minBlockExceedsEstimated",{tag:tag,label:label})); return;
+            }
+            minBlockMinutes = t.minBlockMinutes;
+          }
+          var timePreference = "any";
+          if(t.timePreference!==undefined && t.timePreference!==null && t.timePreference!==""){
+            if(["any","morning","afternoon","evening"].indexOf(t.timePreference)===-1){
+              fail(tr("v.timePreferenceInvalid",{tag:tag,label:label,v:JSON.stringify(t.timePreference)})); return;
+            }
+            timePreference = t.timePreference;
+          }
+          var preferredDay = "";
+          if(t.preferredDay!==undefined && t.preferredDay!==null && t.preferredDay!==""){
+            if(DAY_KEYS.indexOf(t.preferredDay)===-1){
+              fail(tr("v.preferredDayInvalid",{tag:tag,label:label,days:DAY_KEYS.join("/"),v:JSON.stringify(t.preferredDay)})); return;
+            }
+            preferredDay = t.preferredDay;
+          }
+          var locationOptions = "";
+          if(t.locationOptions!==undefined && t.locationOptions!==null){
+            if(Array.isArray(t.locationOptions)){
+              if(t.locationOptions.some(function(x){return typeof x!=="string";})){
+                fail(tr("v.locationArrayType",{tag:tag,label:label})); return;
+              }
+              locationOptions = t.locationOptions.join(", ");
+            } else if(typeof t.locationOptions==="string"){
+              locationOptions = t.locationOptions;
+            } else {
+              fail(tr("v.locationType",{tag:tag,label:label})); return;
+            }
+          }
+          if(t.notes!==undefined && t.notes!==null && typeof t.notes!=="string"){
+            fail(tr("v.notesType",{tag:tag,label:label})); return;
+          }
+          if(t.completed!==undefined && typeof t.completed!=="boolean"){
+            fail(tr("v.completedType",{tag:tag,label:label})); return;
+          }
+          tasksOut.push({
+            name: t.name, category: t.category, deadline: deadline, estimatedMinutes: t.estimatedMinutes,
+            repeatPerWeek: repeatPerWeek, splittable: splittable, minBlockMinutes: minBlockMinutes,
+            timePreference: timePreference, preferredDay: preferredDay, locationOptions: locationOptions,
+            notes: typeof t.notes==="string" ? t.notes : "", completed: t.completed===true
+          });
+        });
+      }
+    }
+
+    if(errors.length>0) return { errors: errors };
+    return { errors: [], data: {
+      testCaseName: testCaseName, weekStart: raw.weekStart, preferences: prefsOut,
+      fixedEvents: fixedOut, tasks: tasksOut
+    }};
+  }
+
+  function devSetStatus(el, ok, text){
+    el.hidden = false;
+    el.className = "dev-status " + (ok?"ok":"err");
+    el.textContent = text;
+  }
+
+  async function wipeCollection(collection){
+    var snap = await db.collection(collection).get();
+    for(var i=0;i<snap.docs.length;i++){
+      await db.collection(collection).doc(snap.docs[i].id).delete();
+    }
+  }
+
+  document.getElementById("dev-import-file").addEventListener("change", function(e){
+    var file = e.target.files && e.target.files[0];
+    var statusEl = document.getElementById("dev-import-status");
+    if(!file) return;
+    if(!db){ devSetStatus(statusEl, false, tr("dev.msgNoDb")); e.target.value=""; return; }
+    var reader = new FileReader();
+    reader.onload = function(){
+      var raw;
+      try { raw = JSON.parse(String(reader.result)); }
+      catch(err){ devSetStatus(statusEl, false, tr("dev.msgJsonParseFail")+err.message); e.target.value=""; return; }
+
+      var result = validateTestCase(raw);
+      if(result.errors.length>0){
+        devSetStatus(statusEl, false, tr("dev.msgImportFailPrefix",{n:result.errors.length})+result.errors.join("\n• "));
+        e.target.value = "";
+        return;
+      }
+
+      var data = result.data;
+      (async function(){
+        try{
+          await Promise.all([wipeCollection("fixedEvents"), wipeCollection("tasks")]);
+
+          var writes = [];
+          data.fixedEvents.forEach(function(ev){ writes.push(db.collection("fixedEvents").add(ev)); });
+          data.tasks.forEach(function(t){ writes.push(db.collection("tasks").add(t)); });
+          writes.push(db.doc("prefs/main").set(data.preferences));
+
+          var weekStartDate = new Date(data.weekStart+"T00:00:00");
+          var pinnedWeekDates = getWeekDates(weekStartDate, 0);
+          var reflectKey = weekDocKey(pinnedWeekDates);
+          writes.push(db.doc("reflections/"+reflectKey).delete());
+
+          await Promise.all(writes);
+
+          // Don't rely on onSnapshot delivery timing (racy against the pinnedWeekStart
+          // assignment below, which isn't itself a db field) — read the just-written
+          // state back deterministically before rendering anything.
+          var freshSnaps = await Promise.all([
+            db.collection("fixedEvents").get(),
+            db.collection("tasks").get(),
+            db.doc("prefs/main").get()
+          ]);
+          state.fixedEvents = freshSnaps[0].docs.map(function(d){ return Object.assign({id:d.id}, d.data()); });
+          state.tasks = freshSnaps[1].docs.map(function(d){ return Object.assign({id:d.id}, d.data()); });
+          state.prefs = Object.assign({dayStart:"07:30",dayEnd:"23:30",protectedBlocks:[],sacrificePriority:[]}, freshSnaps[2].data()||{});
+          state.pinnedWeekStart = weekStartDate;
+          state.weekOffset = 0;
+
+          renderFixedList(); renderTaskInputList(); renderProtectedList(); renderPriorityList();
+          document.getElementById("pref-daystart").value = state.prefs.dayStart;
+          document.getElementById("pref-dayend").value = state.prefs.dayEnd;
+          if(!tabOutput.hidden) renderOutput();
+
+          var counts = { must:0, want:0, optional:0 };
+          data.tasks.forEach(function(t){ counts[t.category]++; });
+          var summary =
+            tr("dev.msgImportSuccess")+(data.testCaseName?(currentLang==="en"?": ":"：")+data.testCaseName:"")+"\n"+
+            "Planning week: "+fmtDateShort(pinnedWeekDates[0])+" – "+fmtDateShort(pinnedWeekDates[6])+"\n"+
+            "Fixed events: "+data.fixedEvents.length+"\n"+
+            "Tasks: "+data.tasks.length+"\n"+
+            "  Must: "+counts.must+"\n"+
+            "  Want: "+counts.want+"\n"+
+            "  Optional: "+counts.optional+"\n"+
+            "Protected blocks: "+data.preferences.protectedBlocks.length;
+          devSetStatus(statusEl, true, summary);
+        } catch(err){
+          devSetStatus(statusEl, false, tr("dev.msgImportError")+(err&&err.message?err.message:String(err)));
+        }
+      })();
+    };
+    reader.onerror = function(){ devSetStatus(statusEl, false, tr("dev.msgReadFail")); };
+    reader.readAsText(file);
+    e.target.value = "";
+  });
+
+  document.getElementById("dev-export-btn").addEventListener("click", function(){
+    var btn = this; var oldText = btn.textContent;
+    (async function(){
+      var name = document.getElementById("dev-export-name").value.trim() || "Weekly Planner Test Case";
+      var weekBase = state.pinnedWeekStart || new Date();
+      var weekDates = getWeekDates(weekBase, state.weekOffset);
+      var payload = {
+        testCaseName: name,
+        weekStart: isoDate(weekDates[0]),
+        preferences: {
+          dayStart: state.prefs.dayStart, dayEnd: state.prefs.dayEnd,
+          sacrificePriority: state.prefs.sacrificePriority || []
+        },
+        protectedBlocks: (state.prefs.protectedBlocks||[]).map(function(pb){
+          return { label: pb.label, days: pb.days, start: pb.start, end: pb.end };
+        }),
+        fixedEvents: state.fixedEvents.map(function(ev){
+          return { name: ev.name, days: ev.days, start: ev.start, end: ev.end, location: ev.location||"", people: ev.people||"" };
+        }),
+        tasks: state.tasks.map(function(t){
+          return {
+            name: t.name, category: t.category, deadline: t.deadline || null,
+            estimatedMinutes: t.estimatedMinutes, repeatPerWeek: t.repeatPerWeek||1,
+            splittable: !!t.splittable, minBlockMinutes: t.minBlockMinutes||t.estimatedMinutes,
+            timePreference: t.timePreference||"any", preferredDay: t.preferredDay||null,
+            locationOptions: (t.locationOptions||"").split(",").map(function(s){return s.trim();}).filter(Boolean),
+            notes: t.notes||"", completed: !!t.completed
+          };
+        })
+      };
+      try{
+        var downloads = await claude.use("downloads");
+        if(!downloads){ btn.textContent = tr("dev.msgDownloadUnavailable"); setTimeout(function(){btn.textContent=oldText;},2000); return; }
+        var json = JSON.stringify(payload, null, 2);
+        var fname = name.replace(/[^\w一-鿿-]+/g, "_").slice(0,80) + ".json";
+        await downloads.save({ filename: fname, data: new Blob([json], {type:"application/json"}) });
+      } catch(err){
+        console.warn("export failed", err);
+        btn.textContent = tr("dev.msgExportFail"); setTimeout(function(){btn.textContent=oldText;},2000);
+      }
+    })();
+  });
+
+  document.getElementById("dev-reset-btn").addEventListener("click", function(){
+    if(!db) return;
+    if(!window.confirm(tr("dev.msgConfirmReset"))) return;
+    var statusEl = document.getElementById("dev-import-status");
+    (async function(){
+      try{
+        var weekBase = state.pinnedWeekStart || new Date();
+        var weekDates = getWeekDates(weekBase, state.weekOffset);
+        var reflectKey = weekDocKey(weekDates);
+        await Promise.all([
+          wipeCollection("fixedEvents"),
+          wipeCollection("tasks"),
+          db.doc("prefs/main").set({dayStart:"07:30", dayEnd:"23:30", protectedBlocks:[], sacrificePriority:[]}),
+          db.doc("reflections/"+reflectKey).delete()
+        ]);
+        state.fixedEvents = [];
+        state.tasks = [];
+        state.prefs = {dayStart:"07:30", dayEnd:"23:30", protectedBlocks:[], sacrificePriority:[]};
+        state.pinnedWeekStart = null;
+        state.weekOffset = 0;
+        currentSchedule = null;
+
+        renderFixedList(); renderTaskInputList(); renderProtectedList(); renderPriorityList();
+        document.getElementById("pref-daystart").value = state.prefs.dayStart;
+        document.getElementById("pref-dayend").value = state.prefs.dayEnd;
+        if(!tabOutput.hidden) renderOutput();
+
+        devSetStatus(statusEl, true, tr("dev.msgResetSuccess"));
+      } catch(err){
+        devSetStatus(statusEl, false, tr("dev.msgResetFail")+(err&&err.message?err.message:String(err)));
+      }
+    })();
+  });
+
+  /* ================= DB WIRING ================= */
+  function subscribeAll(db_){
+    unsub.push(db_.collection("fixedEvents").onSnapshot(function(snap){
+      state.fixedEvents = snap.docs.map(function(d){ return Object.assign({id:d.id}, d.data()); });
+      renderFixedList();
+      if(!tabOutput.hidden) renderOutput();
+    }, function(err){ console.warn(err); }));
+
+    unsub.push(db_.collection("tasks").onSnapshot(function(snap){
+      state.tasks = snap.docs.map(function(d){ return Object.assign({id:d.id}, d.data()); });
+      renderTaskInputList();
+      if(!tabOutput.hidden) renderOutput();
+    }, function(err){ console.warn(err); }));
+
+    unsub.push(db_.doc("prefs/main").onSnapshot(function(snap){
+      if(snap.exists){
+        state.prefs = Object.assign({dayStart:"07:30",dayEnd:"23:30",protectedBlocks:[],sacrificePriority:[]}, snap.data());
+      }
+      document.getElementById("pref-daystart").value = state.prefs.dayStart||"07:30";
+      document.getElementById("pref-dayend").value = state.prefs.dayEnd||"23:30";
+      renderProtectedList();
+      renderPriorityList();
+      if(!tabOutput.hidden) renderOutput();
+    }, function(err){ console.warn(err); }));
+  }
+
+  renderFixedList(); renderTaskInputList(); renderProtectedList(); renderPriorityList();
+
+  claude.use("db").then(function(d){
+    db = d;
+    if(!db) return;
+    subscribeAll(db);
+  }).catch(function(){});
+
+})();
+</script>
