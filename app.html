@@ -309,8 +309,8 @@
             <label><input type="checkbox" value="sun"><span>日</span></label>
           </div>
         </div>
-        <div class="field"><label for="fixed-start">開始時間</label><input type="time" id="fixed-start" required></div>
-        <div class="field"><label for="fixed-end">結束時間</label><input type="time" id="fixed-end" required></div>
+        <div class="field"><label for="fixed-start">開始時間</label><input type="time" id="fixed-start" lang="zh-TW" required></div>
+        <div class="field"><label for="fixed-end">結束時間</label><input type="time" id="fixed-end" lang="zh-TW" required></div>
         <div class="field"><label for="fixed-location">地點</label><input type="text" id="fixed-location" placeholder="教室 301"></div>
         <div class="field"><label for="fixed-people">相關的人</label><input type="text" id="fixed-people" placeholder="主管、team"></div>
         <div class="form-actions">
@@ -339,7 +339,7 @@
             <option value="optional">Optional（有空再做）</option>
           </select>
         </div>
-        <div class="field"><label for="task-deadline">截止時間（可留空）</label><input type="datetime-local" id="task-deadline"></div>
+        <div class="field"><label for="task-deadline">截止時間（可留空）</label><input type="datetime-local" id="task-deadline" lang="zh-TW"></div>
         <div class="field"><label for="task-minutes">單次預估時間（分鐘）</label><input type="number" id="task-minutes" min="5" step="5" required placeholder="240"></div>
         <div class="field"><label for="task-repeat">每週次數</label><input type="number" id="task-repeat" min="1" step="1" value="1"></div>
         <div class="field">
@@ -384,8 +384,8 @@
       <div class="prefs-sub">
         <h3>每天可排程的時間範圍</h3>
         <div class="daytime-inline">
-          <div class="field"><label for="pref-daystart">開始</label><input type="time" id="pref-daystart" value="07:30"></div>
-          <div class="field"><label for="pref-dayend">結束</label><input type="time" id="pref-dayend" value="23:30"></div>
+          <div class="field"><label for="pref-daystart">開始</label><input type="time" id="pref-daystart" lang="zh-TW" value="07:30"></div>
+          <div class="field"><label for="pref-dayend">結束</label><input type="time" id="pref-dayend" lang="zh-TW" value="23:30"></div>
           <button class="btn primary" id="pref-daytime-save" type="button">儲存</button>
         </div>
       </div>
@@ -409,8 +409,8 @@
               <label><input type="checkbox" value="sun"><span>日</span></label>
             </div>
           </div>
-          <div class="field"><label for="protected-start">開始</label><input type="time" id="protected-start" required></div>
-          <div class="field"><label for="protected-end">結束</label><input type="time" id="protected-end" required></div>
+          <div class="field"><label for="protected-start">開始</label><input type="time" id="protected-start" lang="zh-TW" required></div>
+          <div class="field"><label for="protected-end">結束</label><input type="time" id="protected-end" lang="zh-TW" required></div>
           <div class="form-actions">
             <button type="button" class="btn ghost" data-cancel="protected-form">取消</button>
             <button type="submit" class="btn primary" id="protected-submit">新增</button>

@@ -309,8 +309,8 @@
             <label><input type="checkbox" value="sun"><span>Sun</span></label>
           </div>
         </div>
-        <div class="field"><label for="fixed-start">Start Time</label><input type="time" id="fixed-start" required></div>
-        <div class="field"><label for="fixed-end">End Time</label><input type="time" id="fixed-end" required></div>
+        <div class="field"><label for="fixed-start">Start Time</label><input type="time" id="fixed-start" lang="en-US" required></div>
+        <div class="field"><label for="fixed-end">End Time</label><input type="time" id="fixed-end" lang="en-US" required></div>
         <div class="field"><label for="fixed-location">Location</label><input type="text" id="fixed-location" placeholder="Room 301"></div>
         <div class="field"><label for="fixed-people">People</label><input type="text" id="fixed-people" placeholder="Manager, team"></div>
         <div class="form-actions">
@@ -339,7 +339,7 @@
             <option value="optional">Optional (if there's time)</option>
           </select>
         </div>
-        <div class="field"><label for="task-deadline">Deadline (optional)</label><input type="datetime-local" id="task-deadline"></div>
+        <div class="field"><label for="task-deadline">Deadline (optional)</label><input type="datetime-local" id="task-deadline" lang="en-US"></div>
         <div class="field"><label for="task-minutes">Estimated Time per Session (min)</label><input type="number" id="task-minutes" min="5" step="5" required placeholder="240"></div>
         <div class="field"><label for="task-repeat">Times per Week</label><input type="number" id="task-repeat" min="1" step="1" value="1"></div>
         <div class="field">
@@ -384,8 +384,8 @@
       <div class="prefs-sub">
         <h3>Daily Schedulable Time Range</h3>
         <div class="daytime-inline">
-          <div class="field"><label for="pref-daystart">Start</label><input type="time" id="pref-daystart" value="07:30"></div>
-          <div class="field"><label for="pref-dayend">End</label><input type="time" id="pref-dayend" value="23:30"></div>
+          <div class="field"><label for="pref-daystart">Start</label><input type="time" id="pref-daystart" lang="en-US" value="07:30"></div>
+          <div class="field"><label for="pref-dayend">End</label><input type="time" id="pref-dayend" lang="en-US" value="23:30"></div>
           <button class="btn primary" id="pref-daytime-save" type="button">Save</button>
         </div>
       </div>
@@ -409,8 +409,8 @@
               <label><input type="checkbox" value="sun"><span>Sun</span></label>
             </div>
           </div>
-          <div class="field"><label for="protected-start">Start</label><input type="time" id="protected-start" required></div>
-          <div class="field"><label for="protected-end">End</label><input type="time" id="protected-end" required></div>
+          <div class="field"><label for="protected-start">Start</label><input type="time" id="protected-start" lang="en-US" required></div>
+          <div class="field"><label for="protected-end">End</label><input type="time" id="protected-end" lang="en-US" required></div>
           <div class="form-actions">
             <button type="button" class="btn ghost" data-cancel="protected-form">Cancel</button>
             <button type="submit" class="btn primary" id="protected-submit">Add</button>
