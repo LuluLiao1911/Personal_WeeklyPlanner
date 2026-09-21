@@ -6,14 +6,6 @@ writeup (paper background, sage/rose/mustard block colors, Caveat/Noto Sans TC t
 order below the calendar, and the html2canvas+jsPDF rasterized PDF export). All of that is
 unchanged in V2. This file only covers what V2 adds.
 
-## Language toggle
-
-A small pill-shaped two-button group (`中文 | English`) in the header, to the right of the
-title — same visual weight as a secondary control, not competing with the tab switcher for
-attention. The active language is the solid sage-filled button (`aria-pressed="true"`); the
-inactive one is a plain-text button in the same pill. It's the only chrome element that isn't
-inside a card — like the tabs, it belongs to the page shell.
-
 ## Movable / locked / manually-adjusted / conflict block states
 
 Four new visual states layered onto V1's existing four block colors (fixed/must/want/optional),

@@ -1,6 +1,6 @@
 ---
 name: weekly-planner
-description: Publish or update the user's personal weekly planner web app, Version 2 — bilingual (Traditional Chinese / English) single-page planner with fixed events + tasks + preferences input, an auto-computed Monday–Sunday schedule the user can then drag/edit by hand, simplified free-time suggestions, a weekly reflection log, and PDF export that reflects the manually-adjusted plan. Use when the user asks to set up, open, update, or change their weekly planner/scheduler, or says something like "help me plan this week" / "open my weekly plan" / "update the scheduler". This is a new version of the same skill as `weekly-plan` (Version 1) — not a separate tool.
+description: Publish or update the user's personal weekly planner web app, Version 2 — a planner (Traditional Chinese and English UI, as two separate artifacts) with fixed events + tasks + preferences input, an auto-computed Monday–Sunday schedule the user can then drag/edit by hand, simplified free-time suggestions, a weekly reflection log, and PDF export that reflects the manually-adjusted plan. Use when the user asks to set up, open, update, or change their weekly planner/scheduler, or says something like "help me plan this week" / "open my weekly plan" / "update the scheduler". This is a new version of the same skill as `weekly-plan` (Version 1) — not a separate tool.
 ---
 
 # Weekly Planner — Version 2
@@ -9,21 +9,34 @@ description: Publish or update the user's personal weekly planner web app, Versi
 
 **Version 1 (`../.claude/skills/weekly-plan/`, `app.html`/`app.en.html` at the repo root) is
 frozen.** Nothing under this skill ever touches V1's files, database, or docs. V2 lives
-entirely under `skill-v2/weekly-planner/` as its own Artifact with its own database — the two
-never share runtime state, the same way V1's Chinese and English twins never did.
+entirely under `skill-v2/weekly-planner/` as its own pair of Artifacts with their own
+databases — never V1's.
 
 V1 and V2 are treated as two versions of **one skill**, not two skills: same purpose (publish
 the user's weekly planner), same testcase JSON schema (see
-`references/testcase-schema.md` — unchanged from V1), same core scheduling algorithm. What V2
-adds is layered on top, not a rewrite: manual drag/click adjustment of the generated schedule,
-a simplified free-time list, and one bilingual interface instead of two separate language
-files.
+`references/testcase-schema.md` — unchanged from V1), same core scheduling algorithm, same
+two-separate-language-files architecture. What V2 adds is layered on top, not a rewrite:
+manual drag/click adjustment of the generated schedule, and a simplified free-time list.
 
 ## What this is
 
-`app.html` in this folder is a complete, self-serve weekly planner: a single-page app with two
-tabs, in **one** HTML file that serves both languages (a "中文 | English" toggle in the header
-— not two separate Artifacts).
+Two files in this folder, each a complete, self-serve weekly planner with the same two tabs:
+
+- **`app.html`** — Traditional Chinese UI, published as its own Artifact with its own
+  database.
+- **`app.en.html`** — English UI, published as its own separate Artifact with its own
+  database. Not a language toggle on a shared instance — same relationship as V1's
+  `app.html`/`app.en.html` twins, the two never share runtime state.
+
+Both files share the same `I18N`/`tr()` lookup dictionary and `data-i18n` markup internally
+(so every UI string lives in one place per language and both files stay easy to keep in sync),
+but each file locks `currentLang` to one language permanently (`"zh"` in `app.html`, `"en"` in
+`app.en.html`) — there is no runtime switch, and the switching machinery from an earlier draft
+of this file (a `中文 | English` toggle button) was removed in favor of this two-file model,
+matching V1's own architecture and the standing "every change ships to both language versions"
+rule V1 established.
+
+Each file's two tabs:
 
 1. **Input tab** — forms to add/edit/delete fixed events, tasks, and preferences. Identical
    fields and behavior to V1.
@@ -59,32 +72,33 @@ placements without rebuilding the entire plan. Concretely:
 See `references/manual-adjustment.md` for the full design: data model, the two-pass merge, drag
 validation rules, deadline handling, and the undo/reset model.
 
-## Bilingual UI
+## Two-language architecture
 
-One HTML file, one artifact, one database. A `I18N = {zh:{...}, en:{...}}` dictionary plus a
-`tr(key, vars)` lookup function drives all UI chrome (headings, buttons, labels, validation
-messages, status text, free-time suggestions, popover labels). `data-i18n`/`data-i18n-ph`
-attributes mark up the static HTML; everything generated dynamically calls `tr()` directly.
-Switching language:
+Each file carries its own `I18N = {zh:{...}, en:{...}}` dictionary and `tr(key, vars)` lookup
+function (kept as shared internal machinery between the two files even though each only ever
+renders one language — it's what lets a new UI string be added to both `zh`/`en` entries in one
+place per file and stay easy to keep the two files in sync, the same discipline V1's standing
+"every change ships to both language versions" rule already established). `data-i18n`/
+`data-i18n-ph` attributes mark up the static HTML; everything generated dynamically calls
+`tr()` directly. `currentLang` is a fixed constant per file (`"zh"` in `app.html`, `"en"` in
+`app.en.html`), set once at the top of the script — there is no runtime switch and no
+`localStorage` dependency.
 
-- Never touches user-entered data (task/event names, notes, locations, people) — only `esc()`
-  ever inserts that text, `tr()` never wraps it.
-- Re-applies the `lang` attribute on every native `<input type="time">`/`type="datetime-local">`
-  element (including the popover's time input), not just `<html>` — Chromium renders a native
-  time input's placeholder/AM-PM text from that per-element attribute regardless of the
-  viewer's own browser locale, which is what V1's `app.en.html` had to work around by being a
-  separate file with `lang="en-US"` baked in. V2 does the same thing dynamically in
-  `applyI18n()` since there's only one file now.
-- Persists the chosen language to `localStorage` (`weeklyPlannerV2Lang`) per browser, not per
-  account — a fresh browser/profile defaults to Chinese.
+- User-entered data (task/event names, notes, locations, people) is never touched by any of
+  this — only `esc()` ever inserts that text, `tr()` never wraps it.
+- Each native `<input type="time">`/`type="datetime-local">` element (including the popover's
+  time input) gets its `lang` attribute set from the same fixed `currentLang` in `applyI18n()`
+  — this is what fixes the exact bug V1 originally hit (`app.en.html`'s time inputs showing
+  Chinese AM/PM text because Chromium reads a native time input's placeholder text from that
+  per-element attribute, not the viewer's own browser locale, and not `<html lang>` either).
 
 ## Standing rule inherited from V1: nothing user-visible is ever auto-translated
 
 Task names, fixed-event names, locations, people, and notes are exactly what the user typed,
-in whichever language they typed it, regardless of which UI language is selected. The example
-in the original request — "微算機 Lab 作業" staying exactly as entered even with the English UI
-active — is enforced structurally: `tr()` only ever looks up i18n dictionary keys, and every
-call site that renders user data calls `esc()` on the raw string, never `tr()`.
+in whichever language they typed it, regardless of which file/language they're viewed in. The
+example in the original request — "微算機 Lab 作業" staying exactly as entered even in the
+English file — is enforced structurally: `tr()` only ever looks up i18n dictionary keys, and
+every call site that renders user data calls `esc()` on the raw string, never `tr()`.
 
 ## Dev/test tools (not the normal user flow)
 
@@ -111,15 +125,26 @@ Same as V1, plus one new collection:
 
 ## Publishing / updating
 
-- First-time setup: load `artifact-capabilities`, then `Artifact({file_path: "app.html",
-  capabilities: {db: {}, downloads: {}}, icon: "calendar"})` from this folder — a separate
-  Artifact and database from V1's.
-- Any later change to this `app.html`: republish to the **same URL** (pass `url`).
+- First-time setup: load `artifact-capabilities`, then publish **both** files as separate
+  Artifacts — `Artifact({file_path: "app.html", capabilities: {db: {}, downloads: true},
+  icon: "calendar"})` and the same for `app.en.html` — from this folder, each getting its own
+  URL and its own database, neither shared with V1's.
+- Any later change to either file: republish to **that file's own URL** (pass `url`) — same
+  standing rule V1 established: a change isn't done until it ships to both `app.html` and
+  `app.en.html` and both are republished (see "Standing rule" above, and V1's own SKILL.md for
+  the original workflow this mirrors).
+- **A page open without a live `db`/`downloads` connection (the raw file opened directly,
+  outside the Artifact platform, or an Artifact published without `capabilities`) will look
+  like it's silently doing nothing**: `if(!db) return;` guards every write (Add/Edit/Delete,
+  dev-tools import/export/reset), so every one of those actions no-ops with no error shown.
+  This is the same guard V1 already had — it isn't new to V2 — but it's worth knowing before
+  debugging a report like "the Add button doesn't do anything": check first whether the page
+  being tested is actually a published Artifact with `db`/`downloads` declared, not a bug in
+  the submit handler itself.
 - A change to the *scheduling logic itself* should stay identical to V1's unless the user asks
   otherwise (§1 of the original V2 request: preserve the V1 foundation). A change to *manual
-  adjustment, bilingual UI, or free-time suggestions* is V2's own territory — edit freely, but
-  update `references/manual-adjustment.md` if the override data model or validation rules
-  change.
+  adjustment or free-time suggestions* is V2's own territory — edit freely, but update
+  `references/manual-adjustment.md` if the override data model or validation rules change.
 
 ## Guardrails already built into `schedule()` (unchanged from V1)
 
@@ -163,11 +188,12 @@ request's instruction not to claim untested features work)
   Schedule** (clears only the current week's `overrides` doc — verified to leave the
   underlying task/fixed-event data untouched, distinct from the existing full "Reset Planner
   Data" dev tool).
-- **Bilingual single-file UI**: verified both languages render correctly for static labels,
-  dynamic status/summary text, validation messages, and the JSON schema hint; verified native
-  time-input locale text switches correctly (the exact bug V1 hit with `app.en.html`); verified
-  user-entered task/event data is never translated; verified language choice persists across
-  reloads via `localStorage`.
+- **Two-file bilingual UI** (Chinese `app.html` / English `app.en.html`, each its own Artifact
+  and database — matching V1's architecture): verified both files render correctly for static
+  labels, dynamic status/summary text, validation messages, and the JSON schema hint; verified
+  native time-input locale text is correct in each file (the exact bug V1's `app.en.html`
+  needed a separate file to fix in the first place); verified user-entered task/event data is
+  never translated in either file.
 - PDF export DOM wiring: `#pdf-page1`/`#pdf-page2` rasterize the live `#calendar`/`#task-list`
   elements (same nodes the on-screen view uses, not a separate copy), so a manually-adjusted
   block's new position and the "Adjusted" badge are present in the DOM at export time —
@@ -176,8 +202,8 @@ request's instruction not to claim untested features work)
   click time and that host was unreachable from the sandboxed test environment used to build
   this (network policy, not app code). Worth a real click-through before relying on it.
 
-### Two known bugs found and fixed during V2 development (not present in V1's behavior, or
-inherited unmodified — see below)
+### Bugs found and fixed during V2 development (not present in V1's behavior, or inherited
+unmodified — see below)
 
 - The block-detail popover backdrop had `hidden` set on load but a class rule
   (`.block-popover-backdrop{display:flex}`) that unconditionally overrode the browser's
@@ -185,9 +211,18 @@ inherited unmodified — see below)
   page and silently ate every click, anywhere, from first render. Fixed with an explicit
   `.block-popover-backdrop[hidden]{display:none}` rule (and the same fix for the popover's
   `.kv` detail rows, which had the identical bug). This is a new-in-V2 element, not a V1 bug.
-- The `中文 | English` toggle buttons were rendered and styled but had no click handler wired
-  up at all — clicking them did nothing. Fixed by adding the two `addEventListener` calls and
-  an initial `applyI18n()` call at page load.
+- An earlier draft of this file used a single bilingual artifact with a `中文 | English`
+  toggle; that toggle's buttons were rendered and styled but had no click handler wired up at
+  all — clicking them did nothing. This was moot once the toggle itself was removed in favor
+  of the current two-file architecture, but is recorded here since it was a real bug at the
+  time.
+- Reported after first publishing: a page opened **without** a live `db`/`downloads`
+  connection makes every Add/Edit/Delete button (and dev-tools import/export/reset) look
+  broken — they silently no-op (`if(!db) return;`) with no error shown, so "Import failed" and
+  "the Add button doesn't do anything" were the same underlying cause, not two bugs. This is
+  V1's own existing guard, not something V2 introduced — the fix was publishing both files as
+  real Artifacts with `capabilities: {db:{}, downloads:true}` declared (see "Publishing /
+  updating" above), not a code change.
 
 ### Known limitation inherited unmodified from V1 (not a V2 regression — confirmed present in
 V1's own `app.html` too, so out of scope to fix here per the instruction to preserve V1's
@@ -210,4 +245,5 @@ are the parts of it not yet exercised)
   touch screen — the interaction is built on Pointer Events with `touch-action:none`, which
   should cover it, but this wasn't verified on real hardware.
 - Dark theme and phone-width rendering follow the same tokens as V1 but haven't been
-  screenshotted/verified with the new V2 elements (lang toggle, popover, drag ghost) in place.
+  screenshotted/verified with the new V2 elements (popover, drag ghost, lock icon, adjusted
+  badge) in place.

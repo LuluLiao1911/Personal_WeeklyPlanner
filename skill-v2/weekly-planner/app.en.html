@@ -1,4 +1,4 @@
-<title>週間手帳</title>
+<title>Weekly Planner</title>
 <style>
   :root{
     --bg:#EFEAD9;
@@ -810,10 +810,10 @@
       "v.completedType":"{tag}{label}.completed must be a boolean."
     }
   };
-  // This file is the Chinese-UI artifact — a separate published Artifact/database from
-  // app.en.html, the English-UI twin (same architecture as V1). Language is fixed per file,
-  // not a runtime toggle; only the I18N/tr() lookup machinery is shared code between the two.
-  var currentLang = "zh";
+  // This file is the English-UI artifact — a separate published Artifact/database from
+  // app.html, the Chinese-UI twin (same architecture as V1). Language is fixed per file, not
+  // a runtime toggle; only the I18N/tr() lookup machinery is shared code between the two.
+  var currentLang = "en";
   function tr(key, vars){
     var s = (I18N[currentLang] && I18N[currentLang][key]) || (I18N.zh[key]) || key;
     if(vars) Object.keys(vars).forEach(function(k){ s = s.replace("{"+k+"}", vars[k]); });
