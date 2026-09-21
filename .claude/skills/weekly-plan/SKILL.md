@@ -84,3 +84,44 @@ Import validates everything up front and loads nothing at all if any field is in
   actual preferred window, not just anywhere in a gap that merely overlaps it.
 - Free time is never auto-filled — leftover gaps stay blank on the calendar and are only
   listed, as suggestions, in the "Free-Time Suggestions" section.
+
+## Implementation status
+
+### Completed
+
+- **Input tab**: full CRUD forms for fixed events, tasks (category, optional deadline,
+  duration, weekly repeat count, splittable, minimum block, time-of-day preference,
+  preferred day, location text, notes), and preferences (daily schedulable window, protected
+  blocks, sacrifice-priority list).
+- **This Week tab**: live in-browser calendar (7 day columns + shared time axis), task master
+  list with computed "scheduled at" times and status, free-time suggestions, a per-week
+  reflection log (autosaved), and week navigation (prev/this/next) independent of real-world
+  "today."
+- **Scheduling algorithm** (`schedule()`): Must → Want → Optional priority with deadline
+  ordering; deadline clipping to the exact date *and* time; whole-gap placement with a
+  time-of-day–aware pass that lands inside the actual preferred window; a split fallback that
+  respects `minBlockMinutes`; recurring tasks (`repeatPerWeek > 1`) spread across distinct
+  days; visible shortfall reporting instead of silent drops or overbooking.
+- **PDF export**: `html2canvas` + `jsPDF`, loaded from cdnjs at click time, saved via the
+  `downloads` capability.
+- **Dev / Test Tools**: JSON import with full up-front validation and atomic replace (no
+  partial loads), export, reset, and `weekStart` week-pinning for reproducible cross-version
+  testing.
+- **Testing artifacts** (repo root): `prompt.md` (fresh-run test procedure),
+  `testcase.json` (its input), `acceptance-criteria.md` (the pass/fail rubric); schema
+  reference at `references/testcase-schema.md`.
+
+### Not yet implemented / known gaps
+
+- `preferences.sacrificePriority` is stored, editable, and round-trips through import/export,
+  but is **not read by `schedule()`** — it has no effect on placement yet.
+- A task's `locationOptions` and a fixed event's `location`/`people` are display-only —
+  location is never enforced as a placement constraint (no gap carries an inherited
+  location).
+- No manual drag/edit/override of a scheduled block — the calendar is fully recomputed from
+  input every time; the only way to change the schedule is to change the input.
+- A fixed event or protected block whose own `start`/`end` falls outside
+  `preferences.dayStart`–`dayEnd` can render clipped out of view (it doesn't go through the
+  gap system that the day-window bounding relies on). See `acceptance-criteria.md` §A9.
+- Dark theme and phone-width (~400px) rendering follow the Artifact contract's tokens but
+  haven't actually been screenshotted/verified with real data.
