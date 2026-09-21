@@ -1,0 +1,31 @@
+# Fixed / immovable events for the week.
+# Copy this file to data/fixed_events.yaml and fill in your real commitments.
+#
+# Fields:
+#   name      - what it is
+#   days      - list of weekdays this repeats on: mon/tue/wed/thu/fri/sat/sun
+#   start     - "HH:MM" 24h
+#   end       - "HH:MM" 24h
+#   location  - where (used for task location-matching too)
+#   people    - optional list of who's involved
+
+- name: "課程 A"
+  days: [mon, wed]
+  start: "09:00"
+  end: "10:30"
+  location: "教室 301"
+  people: []
+
+- name: "團隊會議"
+  days: [tue]
+  start: "14:00"
+  end: "15:00"
+  location: "線上"
+  people: ["主管", "team"]
+
+- name: "通勤"
+  days: [mon, tue, wed, thu, fri]
+  start: "08:00"
+  end: "08:30"
+  location: "移動中"
+  people: []

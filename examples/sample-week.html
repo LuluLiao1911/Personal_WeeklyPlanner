@@ -1,0 +1,517 @@
+<title>週間手帳</title>
+<style>
+  :root{
+    --bg:#EEF1F6;
+    --paper:#FFFFFF;
+    --paper-soft:#F7F9FC;
+    --ink:#262A3B;
+    --ink-soft:#6C7086;
+    --line:#DDE3EE;
+    --fixed:#3D4258;
+    --fixed-fg:#FFFFFF;
+    --task:#CE8B2C;
+    --task-strong:#A8631A;
+    --task-fg:#2A1B04;
+    --personal:#3E8E73;
+    --personal-fg:#FFFFFF;
+    --free-line:#B9C2D6;
+    --free-fg:#8993AC;
+    --good:#3E8E73;
+    --good-bg:#E8F3EE;
+    --shadow: 0 1px 2px rgba(38,42,59,.06), 0 8px 20px -12px rgba(38,42,59,.18);
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --bg:#191B24;
+      --paper:#20222E;
+      --paper-soft:#262939;
+      --ink:#EDEFF7;
+      --ink-soft:#9BA0BC;
+      --line:#343850;
+      --fixed:#7A81A6;
+      --fixed-fg:#12131C;
+      --task:#E4A94F;
+      --task-strong:#F0BE73;
+      --task-fg:#241804;
+      --personal:#5FBB9C;
+      --personal-fg:#0C1F19;
+      --free-line:#454B68;
+      --free-fg:#8189AA;
+      --good:#5FBB9C;
+      --good-bg:#123027;
+      --shadow: 0 1px 2px rgba(0,0,0,.3), 0 10px 24px -14px rgba(0,0,0,.6);
+    }
+  }
+  :root[data-theme="dark"]{
+    --bg:#191B24;
+    --paper:#20222E;
+    --paper-soft:#262939;
+    --ink:#EDEFF7;
+    --ink-soft:#9BA0BC;
+    --line:#343850;
+    --fixed:#7A81A6;
+    --fixed-fg:#12131C;
+    --task:#E4A94F;
+    --task-strong:#F0BE73;
+    --task-fg:#241804;
+    --personal:#5FBB9C;
+    --personal-fg:#0C1F19;
+    --free-line:#454B68;
+    --free-fg:#8189AA;
+    --good:#5FBB9C;
+    --good-bg:#123027;
+    --shadow: 0 1px 2px rgba(0,0,0,.3), 0 10px 24px -14px rgba(0,0,0,.6);
+  }
+
+  *{box-sizing:border-box}
+  body{
+    margin:0;
+    background:var(--bg);
+    color:var(--ink);
+    font-family:"Noto Sans TC","PingFang TC","Microsoft JhengHei",system-ui,sans-serif;
+  }
+  .page{
+    max-width:920px;
+    margin:0 auto;
+    padding:28px 16px 56px;
+    display:flex;
+    flex-direction:column;
+    gap:22px;
+  }
+  header{
+    display:flex;
+    flex-wrap:wrap;
+    align-items:flex-end;
+    justify-content:space-between;
+    gap:16px;
+    border-bottom:2px solid var(--line);
+    padding-bottom:16px;
+  }
+  h1{
+    font-family:"Klee One","Noto Sans TC",sans-serif;
+    font-weight:600;
+    font-size:clamp(26px,5vw,34px);
+    margin:0 0 4px;
+    letter-spacing:.02em;
+  }
+  .range{
+    margin:0;
+    font-family:"Caveat",cursive;
+    font-size:22px;
+    color:var(--ink-soft);
+  }
+  .legend{
+    display:flex;
+    flex-wrap:wrap;
+    gap:12px 18px;
+  }
+  .legend-item{
+    display:flex;
+    align-items:center;
+    gap:6px;
+    font-size:12.5px;
+    color:var(--ink-soft);
+  }
+  .swatch{
+    width:14px;height:14px;border-radius:4px;flex:none;
+    display:inline-flex;align-items:center;justify-content:center;
+    font-size:9px;
+  }
+  .swatch.fixed{background:var(--fixed);color:var(--fixed-fg)}
+  .swatch.task{background:var(--task);color:var(--task-fg)}
+  .swatch.personal{background:var(--personal);color:var(--personal-fg)}
+  .swatch.free{background:transparent;border:1.5px dashed var(--free-line)}
+
+  .summary{
+    background:var(--good-bg);
+    color:var(--good);
+    border:1px solid var(--good);
+    border-radius:10px;
+    padding:12px 16px;
+    font-size:14px;
+    font-weight:500;
+    display:flex;
+    align-items:center;
+    gap:8px;
+  }
+
+  .week{
+    display:flex;
+    flex-direction:column;
+    gap:14px;
+  }
+  .day-card{
+    background:var(--paper);
+    border:1px solid var(--line);
+    border-radius:14px;
+    padding:14px 16px 12px;
+    box-shadow:var(--shadow);
+  }
+  .day-head{
+    display:flex;
+    align-items:baseline;
+    gap:10px;
+    margin-bottom:10px;
+  }
+  .day-head .dow{
+    font-family:"Klee One","Noto Sans TC",sans-serif;
+    font-size:20px;
+    font-weight:600;
+    width:26px;
+  }
+  .day-head .date{
+    font-family:"Caveat",cursive;
+    font-size:18px;
+    color:var(--ink-soft);
+  }
+  .day-card.today{border-color:var(--task-strong)}
+
+  .timeline{
+    position:relative;
+    height:34px;
+    border-radius:8px;
+    background:var(--paper-soft);
+    border:1px solid var(--line);
+    margin-bottom:22px;
+    overflow:visible;
+  }
+  .tick{
+    position:absolute;
+    top:100%;
+    transform:translateX(-50%);
+    font-size:10px;
+    color:var(--ink-soft);
+    padding-top:2px;
+    font-variant-numeric: tabular-nums;
+  }
+  .tick::before{
+    content:"";
+    position:absolute;
+    bottom:100%;
+    left:50%;
+    width:1px;
+    height:4px;
+    background:var(--line);
+  }
+  .block{
+    position:absolute;
+    top:3px;
+    bottom:3px;
+    border-radius:6px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-size:11px;
+    overflow:hidden;
+    min-width:6px;
+    transition:opacity .2s;
+  }
+  .block.fixed{background:var(--fixed);color:var(--fixed-fg)}
+  .block.task-must{background:var(--task-strong);color:var(--task-fg);box-shadow:inset 0 0 0 1.5px rgba(0,0,0,.12)}
+  .block.task-want{background:var(--task);color:var(--task-fg)}
+  .block.task-optional{background:var(--task);color:var(--task-fg);opacity:.6}
+  .block.personal{background:var(--personal);color:var(--personal-fg)}
+  .block.free-protected{
+    background:transparent;
+    border:1.5px dashed var(--free-line);
+    color:var(--free-fg);
+  }
+  .block.done{opacity:.35;text-decoration:line-through}
+
+  .agenda{
+    list-style:none;
+    margin:0;
+    padding:0;
+    display:flex;
+    flex-wrap:wrap;
+    gap:6px 10px;
+  }
+  .agenda li{
+    font-size:11.5px;
+    color:var(--ink-soft);
+    display:flex;
+    align-items:center;
+    gap:5px;
+    font-variant-numeric: tabular-nums;
+  }
+  .agenda li .dot{
+    width:8px;height:8px;border-radius:3px;flex:none;
+  }
+  .agenda li.fixed .dot{background:var(--fixed)}
+  .agenda li.task-must .dot{background:var(--task-strong)}
+  .agenda li.task-want .dot,.agenda li.task-optional .dot{background:var(--task)}
+  .agenda li.personal .dot{background:var(--personal)}
+  .agenda li.free-protected .dot{background:transparent;border:1.5px dashed var(--free-line)}
+  .agenda li b{font-weight:500;color:var(--ink)}
+
+  .master{
+    background:var(--paper);
+    border:1px solid var(--line);
+    border-radius:14px;
+    padding:18px 18px 8px;
+    box-shadow:var(--shadow);
+  }
+  .master h2{
+    font-family:"Klee One","Noto Sans TC",sans-serif;
+    font-size:20px;
+    margin:0 0 4px;
+  }
+  .master .sub{
+    font-size:12.5px;
+    color:var(--ink-soft);
+    margin:0 0 12px;
+  }
+  #task-list{
+    list-style:none;
+    margin:0;
+    padding:0;
+    display:flex;
+    flex-direction:column;
+  }
+  .task-row{
+    display:flex;
+    align-items:center;
+    gap:12px;
+    padding:11px 0;
+    border-top:1px solid var(--line);
+  }
+  .task-row:first-child{border-top:none}
+  .check{
+    width:22px;height:22px;border-radius:7px;
+    border:2px solid var(--line);
+    background:var(--paper-soft);
+    flex:none;
+    cursor:pointer;
+    display:flex;align-items:center;justify-content:center;
+    color:var(--good);
+    font-size:14px;
+    padding:0;
+  }
+  .check[aria-checked="true"]{background:var(--good-bg);border-color:var(--good)}
+  .task-body{flex:1;min-width:0}
+  .task-name{
+    font-size:14px;
+    font-weight:500;
+    display:block;
+  }
+  .task-row.completed .task-name{color:var(--ink-soft);text-decoration:line-through}
+  .task-meta{
+    display:flex;
+    flex-wrap:wrap;
+    gap:8px;
+    margin-top:3px;
+    font-size:11.5px;
+    color:var(--ink-soft);
+    font-variant-numeric: tabular-nums;
+  }
+  .pill{
+    display:inline-flex;
+    align-items:center;
+    gap:4px;
+    padding:2px 8px;
+    border-radius:999px;
+    font-size:10.5px;
+    font-weight:600;
+    letter-spacing:.02em;
+  }
+  .pill.must{background:var(--task-strong);color:var(--task-fg)}
+  .pill.want{background:var(--task);color:var(--task-fg)}
+  .pill.optional{background:var(--paper-soft);color:var(--ink-soft);border:1px solid var(--line)}
+
+  footer.note{
+    font-size:11.5px;
+    color:var(--ink-soft);
+    text-align:center;
+    padding-top:4px;
+  }
+
+  @media (max-width:480px){
+    .day-head .dow{font-size:18px}
+    .legend{gap:8px 14px}
+  }
+</style>
+
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;600;700&family=Klee+One:wght@600&family=Caveat:wght@500;600&display=swap">
+
+<div class="page">
+  <header>
+    <div>
+      <h1>週間手帳</h1>
+      <p class="range">9/21（一）– 9/27（日）</p>
+    </div>
+    <div class="legend">
+      <span class="legend-item"><span class="swatch fixed"></span>固定行程</span>
+      <span class="legend-item"><span class="swatch task"></span>排定任務</span>
+      <span class="legend-item"><span class="swatch personal"></span>個人活動</span>
+      <span class="legend-item"><span class="swatch free"></span>自由 / 保留時段</span>
+    </div>
+  </header>
+
+  <div class="summary" id="summary">🎉 本週 must 任務與每週目標（運動、閱讀、社交）都已排入，沒有延遲。</div>
+
+  <section class="week" id="week"></section>
+
+  <section class="master">
+    <h2>任務總表</h2>
+    <p class="sub">依截止日期排序，勾選代表完成 — 狀態會保留到下週重新產生行事曆時。</p>
+    <ul id="task-list"></ul>
+  </section>
+
+  <footer class="note">時段：07:30–23:30 ・ 由 weekly-plan skill 根據 data/ 內容自動排入</footer>
+</div>
+
+<script>
+(function(){
+  var DAYS = [
+    { key:"mon", dow:"一", date:"9/21", blocks:[
+      {type:"task-must", label:"回覆 email", start:"07:30", end:"08:00", left:0, width:3.125, taskId:"reply-emails", detail:"07:30–08:00 回覆累積的 email"},
+      {type:"fixed", label:"通勤", start:"08:00", end:"08:30", left:3.125, width:3.125, detail:"08:00–08:30 通勤"},
+      {type:"fixed", label:"課程A", start:"09:00", end:"10:30", left:9.375, width:9.375, detail:"09:00–10:30 課程 A・教室 301"},
+      {type:"task-want", label:"原子習慣 ch3", start:"20:00", end:"21:00", left:78.125, width:6.25, taskId:"read-atomic-habits", detail:"20:00–21:00 讀完《原子習慣》第三章"}
+    ]},
+    { key:"tue", dow:"二", date:"9/22", blocks:[
+      {type:"fixed", label:"通勤", start:"08:00", end:"08:30", left:3.125, width:3.125, detail:"08:00–08:30 通勤"},
+      {type:"personal", label:"運動", start:"08:30", end:"09:15", left:6.25, width:4.688, detail:"08:30–09:15 運動"},
+      {type:"fixed", label:"團隊會議", start:"14:00", end:"15:00", left:40.625, width:6.25, detail:"14:00–15:00 團隊會議・線上"},
+      {type:"task-must", label:"期末報告", start:"15:00", end:"16:30", left:46.875, width:9.375, taskId:"draft-report", detail:"15:00–16:30 期末報告草稿"}
+    ]},
+    { key:"wed", dow:"三", date:"9/23", blocks:[
+      {type:"fixed", label:"通勤", start:"08:00", end:"08:30", left:3.125, width:3.125, detail:"08:00–08:30 通勤"},
+      {type:"fixed", label:"課程A", start:"09:00", end:"10:30", left:9.375, width:9.375, detail:"09:00–10:30 課程 A・教室 301"},
+      {type:"task-must", label:"期末報告", start:"10:30", end:"12:00", left:18.75, width:9.375, taskId:"draft-report", detail:"10:30–12:00 期末報告草稿"},
+      {type:"personal", label:"閱讀", start:"20:00", end:"20:30", left:78.125, width:3.125, detail:"20:00–20:30 閱讀習慣"}
+    ]},
+    { key:"thu", dow:"四", date:"9/24", blocks:[
+      {type:"fixed", label:"通勤", start:"08:00", end:"08:30", left:3.125, width:3.125, detail:"08:00–08:30 通勤"},
+      {type:"personal", label:"運動", start:"08:30", end:"09:15", left:6.25, width:4.688, detail:"08:30–09:15 運動"},
+      {type:"task-optional", label:"整理相簿", start:"14:00", end:"15:30", left:40.625, width:9.375, taskId:"organize-photos", detail:"14:00–15:30 整理相簿"}
+    ]},
+    { key:"fri", dow:"五", date:"9/25", blocks:[
+      {type:"fixed", label:"通勤", start:"08:00", end:"08:30", left:3.125, width:3.125, detail:"08:00–08:30 通勤"},
+      {type:"task-must", label:"期末報告", start:"14:00", end:"15:00", left:40.625, width:6.25, taskId:"draft-report", detail:"14:00–15:00 期末報告草稿（完成）"},
+      {type:"free-protected", label:"放空", start:"19:00", end:"23:00", left:71.875, width:25.0, detail:"19:00–23:00 保留・週五晚上放空"}
+    ]},
+    { key:"sat", dow:"六", date:"9/26", blocks:[
+      {type:"personal", label:"運動", start:"08:30", end:"09:15", left:6.25, width:4.688, detail:"08:30–09:15 運動"},
+      {type:"personal", label:"朋友社交", start:"15:00", end:"17:00", left:46.875, width:12.5, detail:"15:00–17:00 朋友社交"},
+      {type:"personal", label:"閱讀", start:"20:00", end:"20:30", left:78.125, width:3.125, detail:"20:00–20:30 閱讀習慣"}
+    ]},
+    { key:"sun", dow:"日", date:"9/27", blocks:[
+      {type:"free-protected", label:"慢慢來", start:"08:00", end:"10:30", left:3.125, width:15.625, detail:"08:00–10:30 保留・週日早上慢慢來"}
+    ]}
+  ];
+
+  var TASKS = [
+    {id:"reply-emails", name:"回覆累積的 email", category:"must", deadline:"2026-09-25 18:00", estimatedMinutes:30},
+    {id:"draft-report", name:"期末報告草稿", category:"must", deadline:"2026-09-26 23:59", estimatedMinutes:240},
+    {id:"read-atomic-habits", name:"讀完《原子習慣》第三章", category:"want", deadline:"2026-09-28", estimatedMinutes:60},
+    {id:"organize-photos", name:"整理相簿", category:"optional", deadline:"2026-10-05", estimatedMinutes:90}
+  ].sort(function(a,b){ return a.deadline.localeCompare(b.deadline); });
+
+  var TICKS = [
+    {label:"08", left:(480-450)/960*100},
+    {label:"12", left:(720-450)/960*100},
+    {label:"16", left:(960-450)/960*100},
+    {label:"20", left:(1200-450)/960*100}
+  ];
+
+  function esc(s){
+    return String(s).replace(/[&<>"']/g, function(c){
+      return {"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[c];
+    });
+  }
+
+  var TYPE_ICON = {
+    "fixed": "◆",
+    "task-must": "!",
+    "task-want": "♥",
+    "task-optional": "·",
+    "personal": "✦",
+    "free-protected": ""
+  };
+
+  var week = document.getElementById("week");
+  DAYS.forEach(function(day){
+    var card = document.createElement("div");
+    card.className = "day-card";
+    card.dataset.day = day.key;
+
+    var ticks = TICKS.map(function(t){
+      return '<span class="tick" style="left:'+t.left+'%">'+t.label+'</span>';
+    }).join("");
+
+    var blocks = day.blocks.map(function(b){
+      var taskAttr = b.taskId ? ' data-task-id="'+b.taskId+'"' : '';
+      return '<div class="block '+b.type+'" style="left:'+b.left+'%;width:'+b.width+'%" title="'+esc(b.detail)+'"'+taskAttr+'>'+(TYPE_ICON[b.type]||"")+'</div>';
+    }).join("");
+
+    var agenda = day.blocks.map(function(b){
+      return '<li class="'+b.type+'"><span class="dot"></span><b>'+esc(b.start)+'</b> '+esc(b.label)+'</li>';
+    }).join("");
+
+    card.innerHTML =
+      '<div class="day-head"><span class="dow">'+day.dow+'</span><span class="date">'+day.date+'</span></div>' +
+      '<div class="timeline">'+ticks+blocks+'</div>' +
+      '<ul class="agenda">'+agenda+'</ul>';
+
+    week.appendChild(card);
+  });
+
+  var listEl = document.getElementById("task-list");
+  var categoryLabel = {must:"! Must", want:"♥ Want", optional:"· Optional"};
+
+  function fmtDeadline(d){
+    return d.length > 10 ? d.replace(" ", " · ") : d;
+  }
+
+  function render(completed){
+    listEl.innerHTML = "";
+    TASKS.forEach(function(task){
+      var done = !!completed[task.id];
+      var row = document.createElement("li");
+      row.className = "task-row" + (done ? " completed" : "");
+      row.innerHTML =
+        '<button class="check" data-toggle="'+task.id+'" aria-checked="'+done+'" aria-label="標記完成：'+esc(task.name)+'">'+(done ? "✓" : "")+'</button>' +
+        '<div class="task-body">' +
+          '<span class="task-name">'+esc(task.name)+'</span>' +
+          '<div class="task-meta">' +
+            '<span class="pill '+task.category+'">'+categoryLabel[task.category]+'</span>' +
+            '<span>截止 '+esc(fmtDeadline(task.deadline))+'</span>' +
+            '<span>約 '+task.estimatedMinutes+' 分鐘</span>' +
+          '</div>' +
+        '</div>';
+      listEl.appendChild(row);
+
+      document.querySelectorAll('[data-task-id="'+task.id+'"]').forEach(function(el){
+        el.classList.toggle("done", done);
+      });
+    });
+  }
+
+  render({});
+
+  claude.use("db").then(function(db){
+    if(!db) return;
+    var col = db.collection("tasks");
+
+    listEl.addEventListener("click", function(e){
+      var btn = e.target.closest("[data-toggle]");
+      if(!btn) return;
+      var id = btn.dataset.toggle;
+      var cur = btn.getAttribute("aria-checked") === "true";
+      db.doc("tasks/"+id).update({completed: !cur}).catch(function(){});
+    });
+
+    col.onSnapshot(function(snap){
+      var completed = {};
+      snap.docs.forEach(function(d){
+        var data = d.data();
+        completed[d.id] = !!(data && data.completed);
+      });
+      render(completed);
+    }, function(err){
+      console.warn("db subscribe error", err);
+    });
+  }).catch(function(){});
+})();
+</script>
