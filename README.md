@@ -46,6 +46,17 @@ app.html                                the whole app (single file, published as
   references/style.md                   visual design notes
 ```
 
+## Dev/test tools
+
+The Input tab has a collapsed "開發 / 測試工具" panel at the bottom — not the normal way to
+use the planner, but useful when changing the scheduling logic: import a JSON testcase (fixed
+events, tasks, preferences, protected blocks, and a pinned week) to replace all current input
+in one shot, export the current input back out as JSON, or reset everything to a blank state.
+Import validates the whole file before loading anything — a bad field aborts with a specific
+error, never a partial load. Full field reference:
+`.claude/skills/weekly-plan/references/testcase-schema.md`; a ready-to-import example:
+`.claude/skills/weekly-plan/references/testcase-example.json`.
+
 ## Making changes
 
 Edit `app.html` directly (the scheduling logic is in the `schedule()` function; the input

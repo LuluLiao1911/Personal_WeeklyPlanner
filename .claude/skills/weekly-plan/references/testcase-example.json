@@ -1,0 +1,30 @@
+{
+  "testCaseName": "Main Weekly Planner Test",
+  "weekStart": "2026-09-28",
+  "preferences": {
+    "dayStart": "08:00",
+    "dayEnd": "22:00",
+    "sacrificePriority": ["optional 任務", "閱讀"]
+  },
+  "protectedBlocks": [
+    { "label": "Friday night off", "days": ["fri"], "start": "19:00", "end": "23:00" }
+  ],
+  "fixedEvents": [
+    { "name": "Operating Systems Class", "days": ["mon"], "start": "09:00", "end": "12:00", "location": "University", "people": "" },
+    { "name": "Lab Meeting", "days": ["wed"], "start": "14:00", "end": "15:00", "location": "Lab", "people": "Lab members" },
+    { "name": "Gym Class", "days": ["fri"], "start": "07:00", "end": "08:00", "location": "Gym", "people": "" },
+    { "name": "Seminar", "days": ["thu"], "start": "10:00", "end": "11:00", "location": "Room 2", "people": "" },
+    { "name": "Commute AM", "days": ["mon", "tue", "wed", "thu", "fri"], "start": "08:00", "end": "08:30", "location": "Transit", "people": "" },
+    { "name": "Commute PM", "days": ["mon", "tue", "wed", "thu", "fri"], "start": "18:00", "end": "18:30", "location": "Transit", "people": "" }
+  ],
+  "tasks": [
+    { "name": "OS Assignment", "category": "must", "deadline": "2026-10-01T23:59", "estimatedMinutes": 240, "repeatPerWeek": 1, "splittable": true, "minBlockMinutes": 60, "timePreference": "morning", "preferredDay": null, "locationOptions": ["Library", "Home"] },
+    { "name": "Database Project", "category": "must", "deadline": "2026-10-02T23:59", "estimatedMinutes": 180, "repeatPerWeek": 1, "splittable": true, "minBlockMinutes": 45, "timePreference": "any", "preferredDay": null, "locationOptions": ["anywhere"] },
+    { "name": "Exam Review", "category": "must", "deadline": "2026-10-03T18:00", "estimatedMinutes": 120, "repeatPerWeek": 1, "splittable": false, "minBlockMinutes": 120, "timePreference": "afternoon", "preferredDay": null, "locationOptions": ["Library"] },
+    { "name": "Reply Emails", "category": "must", "deadline": "2026-09-30T18:00", "estimatedMinutes": 30, "repeatPerWeek": 1, "splittable": true, "minBlockMinutes": 10, "timePreference": "any", "preferredDay": null, "locationOptions": ["anywhere"] },
+    { "name": "Running", "category": "want", "deadline": null, "estimatedMinutes": 60, "repeatPerWeek": 2, "splittable": false, "minBlockMinutes": 60, "timePreference": "any", "preferredDay": null, "locationOptions": ["Outdoor", "Gym"] },
+    { "name": "Reading", "category": "want", "deadline": null, "estimatedMinutes": 30, "repeatPerWeek": 3, "splittable": true, "minBlockMinutes": 20, "timePreference": "evening", "preferredDay": null, "locationOptions": ["anywhere"] },
+    { "name": "Movie", "category": "optional", "deadline": null, "estimatedMinutes": 150, "repeatPerWeek": 1, "splittable": false, "minBlockMinutes": 150, "timePreference": "evening", "preferredDay": null, "locationOptions": ["Home", "Cinema"] },
+    { "name": "Organize Desk", "category": "optional", "deadline": "2026-10-10", "estimatedMinutes": 45, "repeatPerWeek": 1, "splittable": true, "minBlockMinutes": 15, "timePreference": "any", "preferredDay": null, "locationOptions": ["Home"] }
+  ]
+}

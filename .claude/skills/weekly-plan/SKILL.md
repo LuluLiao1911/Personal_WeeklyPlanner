@@ -32,6 +32,19 @@ never decides how many times a week to exercise, and never silently drops a Must
 doesn't fit — it surfaces a shortfall instead. Those calls come only from what the user enters
 in the Input tab.
 
+## Dev/test tools (not the normal user flow)
+
+A collapsed "開發 / 測試工具" panel at the bottom of the Input tab lets a developer import a
+JSON testcase (fixed events + tasks + preferences + protected blocks + a pinned
+`weekStart`), export the current input as one, or reset everything. It exists so the same
+input can be replayed against different versions of this planner and produce comparable
+output — it is strictly additive: it writes into the exact same `fixedEvents`/`tasks`/
+`prefs/main` collections and fields the form UI does, and runs through the same `schedule()`
+call, never a separate code path. See `references/testcase-schema.md` for the full field
+reference (types, required/optional, defaults, exactly which HTML field and internal state
+each JSON field maps to) and `references/testcase-example.json` for a ready-to-import example.
+Import validates everything up front and loads nothing at all if any field is invalid.
+
 ## Data model (stored in the artifact's `db` capability)
 
 - **`fixedEvents` collection** — immovable: `name, days[], start, end, location, people`.

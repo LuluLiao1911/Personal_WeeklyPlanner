@@ -221,6 +221,36 @@
     background:var(--paper-soft);color:var(--ink);min-height:64px;resize:vertical;
   }
 
+  /* ---------- dev/test tools ---------- */
+  details.dev{
+    margin-top:8px;border:1.5px dashed var(--free-line);border-radius:14px;background:var(--paper-soft);
+  }
+  details.dev > summary{
+    cursor:pointer;padding:12px 16px;font-size:12.5px;font-weight:700;color:var(--ink-soft);
+    letter-spacing:.03em;text-transform:uppercase;list-style:none;display:flex;align-items:center;gap:6px;
+  }
+  details.dev > summary::before{content:"\1F6E0";font-size:12px}
+  details.dev > summary::-webkit-details-marker{display:none}
+  .dev-body{padding:0 16px 16px;display:flex;flex-direction:column;gap:14px;font-family:ui-monospace,"SF Mono",Menlo,Consolas,monospace;}
+  .dev-body .hint{font-family:"Noto Sans TC",system-ui,sans-serif}
+  .dev-row{display:flex;flex-wrap:wrap;align-items:center;gap:8px}
+  .dev-row label{font-size:11px;color:var(--ink-soft);font-weight:600;width:100%;font-family:"Noto Sans TC",system-ui,sans-serif}
+  .dev-row input[type="text"], .dev-row input[type="file"]{
+    font-family:inherit;font-size:12.5px;padding:7px 9px;border:1px solid var(--line);border-radius:8px;
+    background:var(--paper);color:var(--ink);flex:1;min-width:160px;
+  }
+  .dev-status{
+    font-size:12px;white-space:pre-wrap;padding:10px 12px;border-radius:10px;border:1px solid var(--line);
+    background:var(--paper);
+  }
+  .dev-status.ok{border-color:var(--good);color:var(--good);background:var(--good-bg)}
+  .dev-status.err{border-color:var(--warn);color:var(--warn);background:var(--warn-bg)}
+  .dev-schema pre{
+    font-size:11px;line-height:1.5;background:var(--paper);border:1px solid var(--line);border-radius:10px;
+    padding:12px;overflow-x:auto;white-space:pre;
+  }
+  .btn.danger{border-color:var(--warn);color:var(--warn);background:transparent}
+
   footer.note{font-size:11px;color:var(--ink-soft);text-align:center;padding-top:4px}
 
   @media (max-width:620px){
@@ -402,6 +432,34 @@
         </div>
       </div>
     </div>
+
+    <details class="dev">
+      <summary>開發 / 測試工具（Dev &amp; Test Tools）</summary>
+      <div class="dev-body">
+        <p class="hint">給版本間可重現測試用的額外工具，不是一般使用流程 — 平常請照左邊表單操作。匯入測試案例會用 JSON 內容整批覆蓋固定行程／任務／偏好／保護時段，並把「本週計畫」鎖定在 JSON 指定的那一週，這樣不同版本的排程器可以在完全相同的輸入下比較輸出。</p>
+
+        <div class="dev-row">
+          <label for="dev-import-file">匯入測試案例 JSON（Import Test Case JSON）</label>
+          <input type="file" id="dev-import-file" accept=".json,application/json">
+        </div>
+        <div id="dev-import-status" class="dev-status" hidden></div>
+
+        <div class="dev-row">
+          <label for="dev-export-name">匯出用的測試案例名稱（選填）</label>
+          <input type="text" id="dev-export-name" placeholder="Main Weekly Planner Test">
+        </div>
+        <div class="dev-row">
+          <button type="button" class="btn primary" id="dev-export-btn">⬇ 匯出目前輸入為 JSON</button>
+          <button type="button" class="btn danger" id="dev-reset-btn">⟲ 重置 Planner 資料（Reset Planner Data）</button>
+        </div>
+        <p class="hint">重置會清空固定行程、任務、偏好設定、保護時段、目前顯示週的回顧筆記，並解除鎖定週，回到即時的本週。此動作無法復原。</p>
+
+        <details class="dev-schema">
+          <summary style="cursor:pointer;font-size:12px;color:var(--ink-soft);font-family:'Noto Sans TC',system-ui,sans-serif">JSON 格式說明（欄位、必填/選填、預設值）</summary>
+          <pre id="dev-schema-example"></pre>
+        </details>
+      </div>
+    </details>
   </section>
 
   <!-- ============ OUTPUT TAB ============ -->
@@ -689,7 +747,8 @@
     fixedEvents: [],
     tasks: [],
     prefs: {dayStart:"07:30", dayEnd:"23:30", protectedBlocks:[], sacrificePriority:[]},
-    weekOffset: 0
+    weekOffset: 0,
+    pinnedWeekStart: null // Date|null — set by a dev/test JSON import to lock "this week" to a fixed date instead of the real today
   };
   var db = null;
   var unsub = [];
@@ -1011,8 +1070,10 @@
   var currentSchedule = null;
 
   function renderOutput(){
-    var weekDates = getWeekDates(new Date(), state.weekOffset);
-    weekRangeEl.textContent = fmtDateShort(weekDates[0])+"（一） – "+fmtDateShort(weekDates[6])+"（日）"+(state.weekOffset===0?"（本週）":"");
+    var weekBase = state.pinnedWeekStart || new Date();
+    var weekDates = getWeekDates(weekBase, state.weekOffset);
+    var pinnedSuffix = state.pinnedWeekStart ? "（已鎖定測試週"+(state.weekOffset!==0?("，"+(state.weekOffset>0?"+"+state.weekOffset:state.weekOffset)+" 週"):"")+"）" : (state.weekOffset===0?"（本週）":"");
+    weekRangeEl.textContent = fmtDateShort(weekDates[0])+"（一） – "+fmtDateShort(weekDates[6])+"（日）"+pinnedSuffix;
 
     var result = schedule(weekDates, state.prefs, state.fixedEvents, state.tasks);
     currentSchedule = result;
@@ -1045,7 +1106,7 @@
     calendarEl.appendChild(axis);
 
     var todayKey = null;
-    if(state.weekOffset===0){
+    if(!state.pinnedWeekStart && state.weekOffset===0){
       var today = new Date();
       result.days.forEach(function(day){ if(sameDate(day.date, today)) todayKey = day.key; });
     }
@@ -1238,7 +1299,7 @@
               pdf.addImage(canvas.toDataURL("image/png"), "PNG", margin, y, imgW, imgH);
             }
           });
-          var weekDates = getWeekDates(new Date(), state.weekOffset);
+          var weekDates = getWeekDates(state.pinnedWeekStart || new Date(), state.weekOffset);
           var fname = "Weekly_Planner_"+isoDate(weekDates[0])+"_to_"+isoDate(weekDates[6])+".pdf";
           var blob = pdf.output("blob");
           return downloads.save({ filename: fname, data: blob });
@@ -1254,6 +1315,408 @@
     var btn = e.target.closest("[data-toggle]"); if(!btn||!db) return;
     var cur = btn.getAttribute("aria-checked")==="true";
     db.doc("tasks/"+btn.dataset.toggle).update({completed: !cur}).catch(function(){});
+  });
+
+  /* ================= DEV / TEST TOOLS =================
+     Deterministic JSON import/export for reproducible testing across planner
+     versions. Imported data is written into the exact same fixedEvents/tasks/
+     prefs collections the form UI writes to and runs through the exact same
+     schedule() function — there is no separate code path for JSON input. */
+
+  var DEV_SCHEMA_EXAMPLE = {
+    testCaseName: "Main Weekly Planner Test",
+    weekStart: "2026-09-28",
+    preferences: { dayStart: "08:00", dayEnd: "22:00", sacrificePriority: ["optional 任務", "閱讀"] },
+    protectedBlocks: [
+      { label: "Friday night off", days: ["fri"], start: "19:00", end: "23:00" }
+    ],
+    fixedEvents: [
+      { name: "Operating Systems Class", days: ["mon"], start: "09:00", end: "12:00", location: "University", people: "" }
+    ],
+    tasks: [
+      {
+        name: "OS Assignment", category: "must", deadline: "2026-10-01T23:59",
+        estimatedMinutes: 240, repeatPerWeek: 1, splittable: true, minBlockMinutes: 60,
+        timePreference: "morning", preferredDay: null, locationOptions: ["Library", "Home"],
+        notes: "", completed: false
+      },
+      {
+        name: "Running", category: "want", deadline: null,
+        estimatedMinutes: 60, repeatPerWeek: 2, splittable: false, minBlockMinutes: 60,
+        timePreference: "any", preferredDay: null, locationOptions: ["Outdoor", "Gym"],
+        notes: "", completed: false
+      }
+    ]
+  };
+  var devSchemaEl = document.getElementById("dev-schema-example");
+  if(devSchemaEl){
+    devSchemaEl.textContent =
+      "// required: weekStart. everything else optional (defaults noted below).\n"+
+      "// categories: must | want | optional\n"+
+      "// timePreference: any | morning | afternoon | evening (default any)\n"+
+      "// days codes: mon tue wed thu fri sat sun\n"+
+      "// task.deadline: null, \"YYYY-MM-DD\", or \"YYYY-MM-DDTHH:MM\" (default: no deadline)\n"+
+      "// task.repeatPerWeek: default 1 · task.splittable: default false\n"+
+      "// task.minBlockMinutes: default = estimatedMinutes · task.locationOptions: array, default []\n"+
+      "// task.notes: default \"\" · task.completed: default false\n\n"+
+      JSON.stringify(DEV_SCHEMA_EXAMPLE, null, 2);
+  }
+
+  function isPlainObject(v){ return v!=null && typeof v==="object" && !Array.isArray(v); }
+  function isValidHHMM(s){ return typeof s==="string" && /^([01]\d|2[0-3]):([0-5]\d)$/.test(s); }
+  function isValidDateOnly(s){
+    if(typeof s!=="string" || !/^\d{4}-\d{2}-\d{2}$/.test(s)) return false;
+    var p = s.split("-").map(Number);
+    var d = new Date(p[0], p[1]-1, p[2]);
+    return d.getFullYear()===p[0] && d.getMonth()===p[1]-1 && d.getDate()===p[2];
+  }
+  function isValidDeadline(s){
+    if(typeof s!=="string" || s==="") return false;
+    if(s.length<=10) return isValidDateOnly(s);
+    var m = /^(\d{4}-\d{2}-\d{2})T([01]\d|2[0-3]):([0-5]\d)$/.exec(s);
+    return !!m && isValidDateOnly(m[1]);
+  }
+
+  // Validates + normalizes a raw parsed JSON test case. Returns {errors:[...]} on any
+  // problem (nothing is loaded), or {errors:[], data:{...}} ready to write into state/db.
+  function validateTestCase(raw){
+    var errors = [];
+    function fail(msg){ errors.push(msg); }
+
+    if(!isPlainObject(raw)){
+      return { errors: ["最外層必須是一個 JSON 物件（object）。"] };
+    }
+
+    var testCaseName = typeof raw.testCaseName==="string" ? raw.testCaseName : "";
+
+    if(!raw.weekStart || !isValidDateOnly(raw.weekStart)){
+      fail("weekStart 必須是有效的 \"YYYY-MM-DD\" 日期（收到："+JSON.stringify(raw.weekStart)+"）。");
+    }
+
+    var prefsIn = raw.preferences;
+    var prefsOut = { dayStart:"07:30", dayEnd:"23:30", protectedBlocks:[], sacrificePriority:[] };
+    if(prefsIn!==undefined){
+      if(!isPlainObject(prefsIn)){
+        fail("preferences 必須是物件。");
+      } else {
+        if(prefsIn.dayStart!==undefined || prefsIn.dayEnd!==undefined){
+          if(!isValidHHMM(prefsIn.dayStart)) fail("preferences.dayStart 必須是 \"HH:MM\"（收到："+JSON.stringify(prefsIn.dayStart)+"）。");
+          if(!isValidHHMM(prefsIn.dayEnd)) fail("preferences.dayEnd 必須是 \"HH:MM\"（收到："+JSON.stringify(prefsIn.dayEnd)+"）。");
+          if(isValidHHMM(prefsIn.dayStart) && isValidHHMM(prefsIn.dayEnd) && toMinutes(prefsIn.dayStart)>=toMinutes(prefsIn.dayEnd)){
+            fail("preferences.dayStart 必須早於 preferences.dayEnd。");
+          }
+          prefsOut.dayStart = prefsIn.dayStart; prefsOut.dayEnd = prefsIn.dayEnd;
+        }
+        if(prefsIn.sacrificePriority!==undefined){
+          if(!Array.isArray(prefsIn.sacrificePriority) || prefsIn.sacrificePriority.some(function(x){return typeof x!=="string";})){
+            fail("preferences.sacrificePriority 必須是字串陣列。");
+          } else prefsOut.sacrificePriority = prefsIn.sacrificePriority;
+        }
+      }
+    }
+
+    var protectedOut = [];
+    if(raw.protectedBlocks!==undefined){
+      if(!Array.isArray(raw.protectedBlocks)){
+        fail("protectedBlocks 必須是陣列。");
+      } else {
+        raw.protectedBlocks.forEach(function(pb, i){
+          var tag = "protectedBlocks["+i+"]";
+          if(!isPlainObject(pb)){ fail(tag+" 必須是物件。"); return; }
+          if(!pb.label || typeof pb.label!=="string"){ fail(tag+".label 必須是非空字串。"); return; }
+          if(!Array.isArray(pb.days) || pb.days.length===0 || pb.days.some(function(d){return DAY_KEYS.indexOf(d)===-1;})){
+            fail(tag+" (\""+pb.label+"\").days 必須是非空陣列，只能是 "+DAY_KEYS.join("/")+"。"); return;
+          }
+          if(!isValidHHMM(pb.start) || !isValidHHMM(pb.end) || toMinutes(pb.start)>=toMinutes(pb.end)){
+            fail(tag+" (\""+pb.label+"\") 的 start/end 必須是有效 \"HH:MM\" 且 start < end。"); return;
+          }
+          protectedOut.push({ label: pb.label, days: pb.days.slice(), start: pb.start, end: pb.end });
+        });
+      }
+    }
+    prefsOut.protectedBlocks = protectedOut;
+
+    var fixedOut = [];
+    if(raw.fixedEvents!==undefined){
+      if(!Array.isArray(raw.fixedEvents)){
+        fail("fixedEvents 必須是陣列。");
+      } else {
+        raw.fixedEvents.forEach(function(ev, i){
+          var tag = "fixedEvents["+i+"]";
+          if(!isPlainObject(ev)){ fail(tag+" 必須是物件。"); return; }
+          if(!ev.name || typeof ev.name!=="string"){ fail(tag+".name 必須是非空字串。"); return; }
+          if(!Array.isArray(ev.days) || ev.days.length===0 || ev.days.some(function(d){return DAY_KEYS.indexOf(d)===-1;})){
+            fail(tag+" (\""+ev.name+"\").days 必須是非空陣列，只能是 "+DAY_KEYS.join("/")+"。"); return;
+          }
+          if(!isValidHHMM(ev.start) || !isValidHHMM(ev.end) || toMinutes(ev.start)>=toMinutes(ev.end)){
+            fail(tag+" (\""+ev.name+"\") 的 start/end 必須是有效 \"HH:MM\" 且 start < end。"); return;
+          }
+          fixedOut.push({
+            name: ev.name, days: ev.days.slice(), start: ev.start, end: ev.end,
+            location: typeof ev.location==="string" ? ev.location : "",
+            people: typeof ev.people==="string" ? ev.people : ""
+          });
+        });
+      }
+    }
+
+    var tasksOut = [];
+    if(raw.tasks!==undefined){
+      if(!Array.isArray(raw.tasks)){
+        fail("tasks 必須是陣列。");
+      } else {
+        raw.tasks.forEach(function(t, i){
+          var tag = "tasks["+i+"]";
+          var label = (t && t.name) ? " (\""+t.name+"\")" : "";
+          if(!isPlainObject(t)){ fail(tag+" 必須是物件。"); return; }
+          if(!t.name || typeof t.name!=="string"){ fail(tag+".name 必須是非空字串。"); return; }
+          label = " (\""+t.name+"\")";
+          if(["must","want","optional"].indexOf(t.category)===-1){
+            fail(tag+label+".category 必須是 must / want / optional 之一（收到："+JSON.stringify(t.category)+"）。"); return;
+          }
+          var deadline = "";
+          if(t.deadline!==undefined && t.deadline!==null && t.deadline!==""){
+            if(!isValidDeadline(t.deadline)){ fail(tag+label+".deadline 必須是 null、\"YYYY-MM-DD\" 或 \"YYYY-MM-DDTHH:MM\"（收到："+JSON.stringify(t.deadline)+"）。"); return; }
+            deadline = t.deadline;
+          }
+          if(typeof t.estimatedMinutes!=="number" || !isFinite(t.estimatedMinutes) || t.estimatedMinutes<=0){
+            fail(tag+label+".estimatedMinutes 必須是正數（收到："+JSON.stringify(t.estimatedMinutes)+"）。"); return;
+          }
+          var repeatPerWeek = 1;
+          if(t.repeatPerWeek!==undefined){
+            if(typeof t.repeatPerWeek!=="number" || !Number.isInteger(t.repeatPerWeek) || t.repeatPerWeek<1){
+              fail(tag+label+".repeatPerWeek 必須是 >=1 的整數（收到："+JSON.stringify(t.repeatPerWeek)+"）。"); return;
+            }
+            repeatPerWeek = t.repeatPerWeek;
+          }
+          var splittable = t.splittable===true;
+          if(t.splittable!==undefined && typeof t.splittable!=="boolean"){
+            fail(tag+label+".splittable 必須是 boolean。"); return;
+          }
+          var minBlockMinutes = null;
+          if(t.minBlockMinutes!==undefined && t.minBlockMinutes!==null){
+            if(typeof t.minBlockMinutes!=="number" || !isFinite(t.minBlockMinutes) || t.minBlockMinutes<=0){
+              fail(tag+label+".minBlockMinutes 必須是正數（收到："+JSON.stringify(t.minBlockMinutes)+"）。"); return;
+            }
+            if(t.minBlockMinutes > t.estimatedMinutes){
+              fail(tag+label+".minBlockMinutes 不能大於 estimatedMinutes。"); return;
+            }
+            minBlockMinutes = t.minBlockMinutes;
+          }
+          var timePreference = "any";
+          if(t.timePreference!==undefined && t.timePreference!==null && t.timePreference!==""){
+            if(["any","morning","afternoon","evening"].indexOf(t.timePreference)===-1){
+              fail(tag+label+".timePreference 必須是 any/morning/afternoon/evening（收到："+JSON.stringify(t.timePreference)+"）。"); return;
+            }
+            timePreference = t.timePreference;
+          }
+          var preferredDay = "";
+          if(t.preferredDay!==undefined && t.preferredDay!==null && t.preferredDay!==""){
+            if(DAY_KEYS.indexOf(t.preferredDay)===-1){
+              fail(tag+label+".preferredDay 必須是 "+DAY_KEYS.join("/")+" 之一或 null（收到："+JSON.stringify(t.preferredDay)+"）。"); return;
+            }
+            preferredDay = t.preferredDay;
+          }
+          var locationOptions = "";
+          if(t.locationOptions!==undefined && t.locationOptions!==null){
+            if(Array.isArray(t.locationOptions)){
+              if(t.locationOptions.some(function(x){return typeof x!=="string";})){
+                fail(tag+label+".locationOptions 陣列內必須都是字串。"); return;
+              }
+              locationOptions = t.locationOptions.join(", ");
+            } else if(typeof t.locationOptions==="string"){
+              locationOptions = t.locationOptions;
+            } else {
+              fail(tag+label+".locationOptions 必須是字串陣列。"); return;
+            }
+          }
+          if(t.notes!==undefined && t.notes!==null && typeof t.notes!=="string"){
+            fail(tag+label+".notes 必須是字串。"); return;
+          }
+          if(t.completed!==undefined && typeof t.completed!=="boolean"){
+            fail(tag+label+".completed 必須是 boolean。"); return;
+          }
+          tasksOut.push({
+            name: t.name, category: t.category, deadline: deadline, estimatedMinutes: t.estimatedMinutes,
+            repeatPerWeek: repeatPerWeek, splittable: splittable, minBlockMinutes: minBlockMinutes,
+            timePreference: timePreference, preferredDay: preferredDay, locationOptions: locationOptions,
+            notes: typeof t.notes==="string" ? t.notes : "", completed: t.completed===true
+          });
+        });
+      }
+    }
+
+    if(errors.length>0) return { errors: errors };
+    return { errors: [], data: {
+      testCaseName: testCaseName, weekStart: raw.weekStart, preferences: prefsOut,
+      fixedEvents: fixedOut, tasks: tasksOut
+    }};
+  }
+
+  function devSetStatus(el, ok, text){
+    el.hidden = false;
+    el.className = "dev-status " + (ok?"ok":"err");
+    el.textContent = text;
+  }
+
+  async function wipeCollection(collection){
+    var snap = await db.collection(collection).get();
+    for(var i=0;i<snap.docs.length;i++){
+      await db.collection(collection).doc(snap.docs[i].id).delete();
+    }
+  }
+
+  document.getElementById("dev-import-file").addEventListener("change", function(e){
+    var file = e.target.files && e.target.files[0];
+    var statusEl = document.getElementById("dev-import-status");
+    if(!file) return;
+    if(!db){ devSetStatus(statusEl, false, "尚未連接到儲存服務，無法匯入。"); e.target.value=""; return; }
+    var reader = new FileReader();
+    reader.onload = function(){
+      var raw;
+      try { raw = JSON.parse(String(reader.result)); }
+      catch(err){ devSetStatus(statusEl, false, "JSON 解析失敗："+err.message); e.target.value=""; return; }
+
+      var result = validateTestCase(raw);
+      if(result.errors.length>0){
+        devSetStatus(statusEl, false, "匯入失敗，發現 "+result.errors.length+" 個問題（未載入任何資料）：\n• "+result.errors.join("\n• "));
+        e.target.value = "";
+        return;
+      }
+
+      var data = result.data;
+      (async function(){
+        try{
+          await Promise.all([wipeCollection("fixedEvents"), wipeCollection("tasks")]);
+
+          var writes = [];
+          data.fixedEvents.forEach(function(ev){ writes.push(db.collection("fixedEvents").add(ev)); });
+          data.tasks.forEach(function(t){ writes.push(db.collection("tasks").add(t)); });
+          writes.push(db.doc("prefs/main").set(data.preferences));
+
+          var weekStartDate = new Date(data.weekStart+"T00:00:00");
+          var pinnedWeekDates = getWeekDates(weekStartDate, 0);
+          var reflectKey = weekDocKey(pinnedWeekDates);
+          writes.push(db.doc("reflections/"+reflectKey).delete());
+
+          await Promise.all(writes);
+
+          // Don't rely on onSnapshot delivery timing (racy against the pinnedWeekStart
+          // assignment below, which isn't itself a db field) — read the just-written
+          // state back deterministically before rendering anything.
+          var freshSnaps = await Promise.all([
+            db.collection("fixedEvents").get(),
+            db.collection("tasks").get(),
+            db.doc("prefs/main").get()
+          ]);
+          state.fixedEvents = freshSnaps[0].docs.map(function(d){ return Object.assign({id:d.id}, d.data()); });
+          state.tasks = freshSnaps[1].docs.map(function(d){ return Object.assign({id:d.id}, d.data()); });
+          state.prefs = Object.assign({dayStart:"07:30",dayEnd:"23:30",protectedBlocks:[],sacrificePriority:[]}, freshSnaps[2].data()||{});
+          state.pinnedWeekStart = weekStartDate;
+          state.weekOffset = 0;
+
+          renderFixedList(); renderTaskInputList(); renderProtectedList(); renderPriorityList();
+          document.getElementById("pref-daystart").value = state.prefs.dayStart;
+          document.getElementById("pref-dayend").value = state.prefs.dayEnd;
+          if(!tabOutput.hidden) renderOutput();
+
+          var counts = { must:0, want:0, optional:0 };
+          data.tasks.forEach(function(t){ counts[t.category]++; });
+          var summary =
+            "✅ 匯入成功"+(data.testCaseName?"："+data.testCaseName:"")+"\n"+
+            "Planning week: "+fmtDateShort(pinnedWeekDates[0])+" – "+fmtDateShort(pinnedWeekDates[6])+"\n"+
+            "Fixed events: "+data.fixedEvents.length+"\n"+
+            "Tasks: "+data.tasks.length+"\n"+
+            "  Must: "+counts.must+"\n"+
+            "  Want: "+counts.want+"\n"+
+            "  Optional: "+counts.optional+"\n"+
+            "Protected blocks: "+data.preferences.protectedBlocks.length;
+          devSetStatus(statusEl, true, summary);
+        } catch(err){
+          devSetStatus(statusEl, false, "匯入過程中發生錯誤："+(err&&err.message?err.message:String(err)));
+        }
+      })();
+    };
+    reader.onerror = function(){ devSetStatus(statusEl, false, "讀取檔案失敗。"); };
+    reader.readAsText(file);
+    e.target.value = "";
+  });
+
+  document.getElementById("dev-export-btn").addEventListener("click", function(){
+    var btn = this; var oldText = btn.textContent;
+    (async function(){
+      var name = document.getElementById("dev-export-name").value.trim() || "Weekly Planner Test Case";
+      var weekBase = state.pinnedWeekStart || new Date();
+      var weekDates = getWeekDates(weekBase, state.weekOffset);
+      var payload = {
+        testCaseName: name,
+        weekStart: isoDate(weekDates[0]),
+        preferences: {
+          dayStart: state.prefs.dayStart, dayEnd: state.prefs.dayEnd,
+          sacrificePriority: state.prefs.sacrificePriority || []
+        },
+        protectedBlocks: (state.prefs.protectedBlocks||[]).map(function(pb){
+          return { label: pb.label, days: pb.days, start: pb.start, end: pb.end };
+        }),
+        fixedEvents: state.fixedEvents.map(function(ev){
+          return { name: ev.name, days: ev.days, start: ev.start, end: ev.end, location: ev.location||"", people: ev.people||"" };
+        }),
+        tasks: state.tasks.map(function(t){
+          return {
+            name: t.name, category: t.category, deadline: t.deadline || null,
+            estimatedMinutes: t.estimatedMinutes, repeatPerWeek: t.repeatPerWeek||1,
+            splittable: !!t.splittable, minBlockMinutes: t.minBlockMinutes||t.estimatedMinutes,
+            timePreference: t.timePreference||"any", preferredDay: t.preferredDay||null,
+            locationOptions: (t.locationOptions||"").split(",").map(function(s){return s.trim();}).filter(Boolean),
+            notes: t.notes||"", completed: !!t.completed
+          };
+        })
+      };
+      try{
+        var downloads = await claude.use("downloads");
+        if(!downloads){ btn.textContent = "下載不可用"; setTimeout(function(){btn.textContent=oldText;},2000); return; }
+        var json = JSON.stringify(payload, null, 2);
+        var fname = name.replace(/[^\w一-鿿-]+/g, "_").slice(0,80) + ".json";
+        await downloads.save({ filename: fname, data: new Blob([json], {type:"application/json"}) });
+      } catch(err){
+        console.warn("export failed", err);
+        btn.textContent = "匯出失敗"; setTimeout(function(){btn.textContent=oldText;},2000);
+      }
+    })();
+  });
+
+  document.getElementById("dev-reset-btn").addEventListener("click", function(){
+    if(!db) return;
+    if(!window.confirm("確定要重置所有 Planner 資料嗎？固定行程、任務、偏好、保護時段、目前週的回顧筆記都會清空，且無法復原。")) return;
+    var statusEl = document.getElementById("dev-import-status");
+    (async function(){
+      try{
+        var weekBase = state.pinnedWeekStart || new Date();
+        var weekDates = getWeekDates(weekBase, state.weekOffset);
+        var reflectKey = weekDocKey(weekDates);
+        await Promise.all([
+          wipeCollection("fixedEvents"),
+          wipeCollection("tasks"),
+          db.doc("prefs/main").set({dayStart:"07:30", dayEnd:"23:30", protectedBlocks:[], sacrificePriority:[]}),
+          db.doc("reflections/"+reflectKey).delete()
+        ]);
+        state.fixedEvents = [];
+        state.tasks = [];
+        state.prefs = {dayStart:"07:30", dayEnd:"23:30", protectedBlocks:[], sacrificePriority:[]};
+        state.pinnedWeekStart = null;
+        state.weekOffset = 0;
+        currentSchedule = null;
+
+        renderFixedList(); renderTaskInputList(); renderProtectedList(); renderPriorityList();
+        document.getElementById("pref-daystart").value = state.prefs.dayStart;
+        document.getElementById("pref-dayend").value = state.prefs.dayEnd;
+        if(!tabOutput.hidden) renderOutput();
+
+        devSetStatus(statusEl, true, "✅ 已重置。回到即時的本週。");
+      } catch(err){
+        devSetStatus(statusEl, false, "重置失敗："+(err&&err.message?err.message:String(err)));
+      }
+    })();
   });
 
   /* ================= DB WIRING ================= */
