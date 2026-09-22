@@ -5,12 +5,18 @@ a form, and get a Monday–Sunday schedule that protects exercise, reading, soci
 real free blocks instead of letting "the things that absolutely must get done" quietly eat
 the whole week.
 
-**Live app (Chinese UI):** https://claude.ai/artifact/9KtMmdz6JLccGjGs4GrJFE
-**Live app (English UI):** https://claude.ai/artifact/XRLUni3kdae8BHirFj62vs
+**Live apps:**
 
-Both are the same app and the same `schedule()` logic — only the interface text differs.
-They're two separate artifacts with two separate databases (separate data, separate example
-seed), not a language toggle on one shared instance.
+| | Chinese UI | English UI |
+|---|---|---|
+| **Version 1** | https://claude.ai/artifact/9KtMmdz6JLccGjGs4GrJFE | https://claude.ai/artifact/XRLUni3kdae8BHirFj62vs |
+| **Version 2** | https://claude.ai/artifact/N6PN7AwkLgpEtrjPKqodfV | https://claude.ai/artifact/8R2LM8UH7wE2RsuMGRJLXo |
+
+All four are the same core `schedule()` logic — only the interface text differs by language,
+and V2 adds manual drag/click adjustment of the generated schedule on top (see
+`skill-v2/weekly-planner/SKILL.md`). Each is its own separate artifact with its own database
+(separate data, separate example seed), not a language or version toggle on one shared
+instance.
 
 ## How it works
 
