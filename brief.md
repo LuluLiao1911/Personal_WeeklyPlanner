@@ -2,31 +2,31 @@
 
 ## Motivation
 
-Without planning ahead, mandatory tasks fill every slot, and running, reading, socializing,
-and rest keep getting pushed back. A standard calendar only lists what to do — it doesn't help
-place tasks around fixed commitments or protect free time. V1 was built to solve this: read
-fixed events and flexible tasks together, and auto-generate a weekly schedule by category,
-deadline, and duration.
-
-But after actually using V1, I discovered a problem the design hadn't anticipated: I didn't
-like some of the placements the algorithm chose, and wanted to move a task — a run pushed to
-evening instead of morning, a reading block moved to a freer afternoon. V1 had no way to do
-this. The only path was editing the source task's constraints and regenerating the whole week,
-which often reshuffled everything else too. The algorithm's output was being treated as final,
-when in practice it was only ever a starting point.
+Without planning ahead, mandatory tasks tend to fill every available slot, while running,
+reading, socializing, and rest keep getting pushed back. A standard calendar can record what I
+need to do, but it does not help me actively place flexible tasks around fixed commitments,
+deadlines, and available time, or preserve larger blocks of free time. I therefore built V1 to
+combine fixed events and flexible tasks in one system and automatically generate a weekly
+schedule based on category, deadline, and duration.
 
 ## Design and Improvement
 
-That discovery is what V2 was built around: V1's algorithm stays as the baseline, but its
-output is now a recommendation, not a final answer. V2 adds direct manual adjustment —
-dragging a task block to a new time slot on the calendar itself, validated live against
-overlaps and deadlines, with undo and a reset back to the generated plan.
+V1 was designed to reduce the effort of planning from scratch each week. It takes structured
+inputs such as fixed events, task priorities, deadlines, estimated durations, and minimum work
+blocks, then generates a complete weekly schedule. However, after actually using V1, I realized
+that a technically feasible schedule was not always the schedule I personally preferred. I
+sometimes wanted to move a run from evening to morning or shift a reading block to a freer
+afternoon, but V1 required me to change the original task constraints and regenerate the entire
+week, which could also reshuffle unrelated tasks.
 
-Building V2 also surfaced a separate, real bug in shortfall reporting: a Must task with
-`repeatPerWeek > 1` that couldn't be fully placed only reported the one session that first
-failed, not the rest. On this project's own test data, a 15×/week task that could realistically
-fit only 1 session was misreported as a 30-minute shortfall; the fix now reports the true 420
-minutes across 14 sessions.
+This experience directly shaped V2. Instead of treating the algorithm's output as the final
+answer, V2 treats it as an initial recommendation. Users can directly drag individual task
+blocks to new time slots while keeping the rest of the schedule intact. Each move is checked
+against conflicts and deadlines, and users can undo changes or reset to the original generated
+plan. I also simplified the free-time section so that it highlights useful opportunities rather
+than listing every empty period. The main design shift was therefore from full automation
+toward a collaborative planning workflow in which the system handles scheduling complexity
+while the user keeps final control.
 
 ## Results and Limits
 
