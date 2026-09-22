@@ -1796,15 +1796,7 @@
         return {dayKey: col.dataset.dayKey, start: minute};
       }
 
-      function onMove(ev){
-        var dx = ev.clientX-startX, dy = ev.clientY-startY;
-        if(!dragging && (Math.abs(dx)>4 || Math.abs(dy)>4)){
-          dragging = true;
-          div.classList.add("dragging");
-          try{ div.setPointerCapture(e.pointerId); }catch(err){}
-        }
-        if(!dragging) return;
-        var cand = pointToCandidate(ev.clientX, ev.clientY);
+      function updateGhostFor(cand){
         if(!cand){ if(ghost){ghost.remove(); ghost=null;} lastCandidate=null; return; }
         var dur = block.end-block.start;
         var check = validateMove(block.blockKey, cand.dayKey, cand.start);
@@ -1824,26 +1816,58 @@
         }
       }
 
-      function onUp(ev){
+      // Finalizes the gesture using the given clientX/clientY, recomputing the candidate
+      // fresh from those coordinates rather than trusting whatever the last pointermove
+      // happened to leave in `lastCandidate` — the coordinates delivered with the final
+      // pointerup/pointercancel (or a "buttons went to 0" pointermove, below) can differ
+      // slightly from the previous move's, especially on a trackpad's release/lift-off,
+      // and a stale or null lastCandidate at that instant would otherwise silently drop
+      // the move with the ghost still shown but nothing actually committed.
+      function finishDrag(ev, commit){
         document.removeEventListener("pointermove", onMove);
         document.removeEventListener("pointerup", onUp);
+        document.removeEventListener("pointercancel", onCancel);
         div.classList.remove("dragging");
+        var wasDragging = dragging;
         if(ghost){ ghost.remove(); ghost=null; }
-        if(!dragging){
-          openBlockPopover(dayKey, block);
+        if(!wasDragging){
+          if(commit) openBlockPopover(dayKey, block);
           return;
         }
-        if(!lastCandidate){ return; }
-        var check = validateMove(block.blockKey, lastCandidate.dayKey, lastCandidate.start);
+        if(!commit) return;
+        var cand = (ev && pointToCandidate(ev.clientX, ev.clientY)) || lastCandidate;
+        if(!cand) return;
+        var check = validateMove(block.blockKey, cand.dayKey, cand.start);
         if(!check.ok){
           if(check.reasonKey!=="drag.noChange") showDragToast(tr(check.reasonKey, check.vars));
           return;
         }
-        commitMove(currentWeekKey(), block.blockKey, lastCandidate.dayKey, lastCandidate.start);
+        commitMove(currentWeekKey(), block.blockKey, cand.dayKey, cand.start);
       }
+
+      function onMove(ev){
+        if(ev.buttons===0){
+          // Some trackpad "tap and drag" gestures release the button without a distinct
+          // pointerup ever reaching this listener — finalize right here instead of leaving
+          // the ghost/listeners stuck.
+          finishDrag(ev, true);
+          return;
+        }
+        var dx = ev.clientX-startX, dy = ev.clientY-startY;
+        if(!dragging && (Math.abs(dx)>4 || Math.abs(dy)>4)){
+          dragging = true;
+          div.classList.add("dragging");
+        }
+        if(!dragging) return;
+        updateGhostFor(pointToCandidate(ev.clientX, ev.clientY));
+      }
+
+      function onUp(ev){ finishDrag(ev, true); }
+      function onCancel(ev){ finishDrag(ev, false); }
 
       document.addEventListener("pointermove", onMove);
       document.addEventListener("pointerup", onUp);
+      document.addEventListener("pointercancel", onCancel);
     });
   }
 
