@@ -1,9 +1,13 @@
 # Placement algorithm (as implemented in `app.html`'s `schedule()`)
 
-**Unchanged from Version 1** — this is the exact same baseline algorithm, same rules, same
-guardrails. See V1's `.claude/skills/weekly-plan/references/algorithm.md` for the full original
-writeup; it is reproduced here (with one addition, §4 below) so this folder's docs are
-self-contained.
+**Placement logic unchanged from Version 1** — same rules, same guardrails, same gap
+selection, same task ordering. See V1's
+`.claude/skills/weekly-plan/references/algorithm.md` for the full original writeup; it is
+reproduced here (with two additions — §4 below, and the shortfall-counting fix in §2.5) so this
+folder's docs are self-contained. The one behavioral difference from V1 is *diagnostic, not
+placement*: how a Must task's shortfall is counted and reported when `repeatPerWeek > 1` (see
+§2.5) — V1 has a known under-reporting gap here (its own `acceptance-criteria.md` §A11); V2
+fixes the reporting only, in `app.html`/`app.en.html`, without touching V1.
 
 Operates on one Monday–Sunday week, in minutes-of-day, per day, between `prefs.dayStart` and
 `prefs.dayEnd`.
@@ -35,7 +39,17 @@ For each session:
    `minBlockMinutes`) until placed or gaps run out.
 5. **Shortfall**: a Must session that doesn't fully fit, or a recurring task that can't get all
    its sessions in, is recorded and shown in the summary — never silently dropped or placed
-   past its deadline.
+   past its deadline. For a Must task with `repeatPerWeek > 1`, the per-task session loop
+   `break`s on the first session that fails to fully place (unchanged from V1 — placement
+   itself doesn't keep trying once capacity is exhausted), but the shortfall recorded at that
+   point accounts for the *entire* remaining workload, not just that one session:
+   `unscheduled = repeat - placedSessions` (every session from the failing one through the end
+   of `repeat`, including ones the `break` meant were never even attempted) and
+   `shortfallMinutes = remaining + sessionMinutes*(unscheduled-1)` (that session's own leftover
+   — which may be a partial amount if it was splittable and got partway placed — plus one full
+   session's worth for each later session that was never attempted). This is what fixes the
+   known V1 gap where a `repeatPerWeek: 3` Must task missing 2 of its 3 sessions was reported
+   as only a single session's shortfall.
 
 ## 3. Free time
 

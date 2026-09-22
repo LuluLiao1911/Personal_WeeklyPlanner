@@ -223,6 +223,53 @@ unmodified — see below)
   V1's own existing guard, not something V2 introduced — the fix was publishing both files as
   real Artifacts with `capabilities: {db:{}, downloads:true}` declared (see "Publishing /
   updating" above), not a code change.
+- **Repeated Must-task shortfall under-reporting** (previously listed under "Known gaps"
+  below, inherited from V1 — see V1's `acceptance-criteria.md` §A11 for the original report):
+  fixed in V2 only, V1 untouched. In `schedule()`, a Must task with `repeatPerWeek > 1` loops
+  once per required session and `break`s out of that loop the moment one session fails to
+  fully place (`remaining>0`). The bug was that the shortfall push at that `break` point only
+  ever recorded `remaining` — the leftover minutes of *that one* session — with no accounting
+  for the further sessions in `repeat` that the `break` meant were never even attempted. A
+  15×/week real task in the shared `testcase.json` that could only actually fit 1 session
+  demonstrates this concretely: before the fix it reported a 30-minute shortfall (one session);
+  after the fix it reports the true 420-minute, 14-session shortfall.
+
+  The fix only changes shortfall *counting/reporting*, not placement: `placedSessions` (already
+  incremented only on a fully-successful session, unchanged) now doubles as the "sessions
+  scheduled so far" count at the moment of `break`, so `unscheduled = repeat - placedSessions`
+  is the true remaining-session count — including sessions never attempted, not just the one
+  that triggered the break. Total shortfall minutes is `remaining +
+  sessionMinutes*(unscheduled-1)` (the failing/partial session's own leftover, plus one full
+  session's worth for every later session that was never attempted at all) — this also handles
+  a partially-split session correctly (e.g. a 90-min session that only got 30 min placed before
+  running out of eligible gaps counts as unscheduled, but its shortfall is the true 60
+  remaining minutes, not the full 90). Applied in two places: the existing `break`-time push,
+  and the pre-existing "no eligible day at all" early-return path (which already computed the
+  correct total minutes but not the new count fields, for consistent messaging).
+
+  Scoped deliberately narrow: only the `category==="must"` branch changed, and only when
+  `repeat>1` — a `repeatPerWeek: 1` Must task (the single-session case) hits the exact same
+  code path and message it always did (verified: same `{kind:"task", minutes:remaining}`
+  shape, same `summary.taskShort` wording), and non-Must repeating tasks (`want`/`optional`)
+  were untouched — their `{kind:"repeat", missing:repeat-placedSessions}` branch already
+  correctly summed the full remaining count and didn't have this bug. No change to gap
+  selection, task ordering, splitting, time-preference handling, or `repeatPerWeek` semantics.
+
+  New user-facing message (only for Must + `repeat>1`, both files, matching the app's fixed
+  language): `"{name}: {scheduled} of {required} sessions scheduled. {unscheduled}
+  session(s) ({minutes} min) remain unscheduled."` in `app.en.html`, `"{name}：{required}
+  次中已排入 {scheduled} 次，仍有 {unscheduled} 次（{minutes} 分鐘）無法排入。"` in `app.html`
+  — built directly in JS (`fmtMustRepeatShortfall()`) rather than through the `tr()` dictionary,
+  since English needs session/sessions pluralization that `tr()`'s plain `{placeholder}`
+  substitution can't express.
+
+  **Verified** with Playwright + a mock `db`, both files: all 5 requested acceptance cases
+  (3/3 scheduled → no warning; 2/3 → 1 session/60 min short; 1/3 → 2 sessions/120 min short,
+  the main regression case; 0/3 → 3 sessions/180 min short; `repeatPerWeek:1` unchanged in both
+  the fits and fails sub-cases) plus the splittable-partial-session nuance (a 90-min session
+  split 30+un-placed-60 correctly counts as 1 unscheduled session / 60 shortfall minutes, not 0
+  or 90) plus the real `testcase.json`'s pre-existing 15×/week task described above. The shared
+  testcase still imports and schedules cleanly end-to-end in both files with no console errors.
 
 ### Known limitation inherited unmodified from V1 (not a V2 regression — confirmed present in
 V1's own `app.html` too, so out of scope to fix here per the instruction to preserve V1's
@@ -239,8 +286,6 @@ are the parts of it not yet exercised)
 
 - `preferences.sacrificePriority` and `locationOptions`/`location`/`people` are still
   display-only, same as V1 — not read by `schedule()`.
-- A Must task with `repeatPerWeek > 1` still only reports a shortfall for the first session
-  that fails to fit, same known V1 gap (see V1's `acceptance-criteria.md` §A11).
 - Touch-device dragging (as opposed to mouse/pointer-emulated) hasn't been tested on an actual
   touch screen — the interaction is built on Pointer Events with `touch-action:none`, which
   should cover it, but this wasn't verified on real hardware.

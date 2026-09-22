@@ -994,7 +994,14 @@
         return !deadline || dateOnly(day.date) <= dateOnly(deadline);
       });
       if(baseEligible.length===0){
-        if(task.category==="must") shortfalls.push({kind:"task", name:task.name, minutes:sessionMinutes*repeat});
+        if(task.category==="must"){
+          if(repeat>1){
+            shortfalls.push({kind:"mustRepeat", name:task.name, required:repeat, scheduled:0,
+              unscheduled:repeat, perSessionMinutes:sessionMinutes, minutes:sessionMinutes*repeat});
+          } else {
+            shortfalls.push({kind:"task", name:task.name, minutes:sessionMinutes*repeat});
+          }
+        }
         return;
       }
 
@@ -1050,7 +1057,20 @@
         }
 
         if(remaining>0){
-          if(task.category==="must") shortfalls.push({kind:"task", name:task.name, minutes:remaining});
+          if(task.category==="must"){
+            if(repeat>1){
+              // placedSessions hasn't been incremented for this (failing) session yet, so
+              // repeat-placedSessions is the true remaining-session count (this one plus every
+              // later session in the loop that never got attempted once we break below) — not
+              // just this one session's leftover minutes. See references/algorithm.md.
+              var unscheduled = repeat - placedSessions;
+              var totalShortfallMinutes = remaining + sessionMinutes*(unscheduled-1);
+              shortfalls.push({kind:"mustRepeat", name:task.name, required:repeat, scheduled:placedSessions,
+                unscheduled:unscheduled, perSessionMinutes:sessionMinutes, minutes:totalShortfallMinutes});
+            } else {
+              shortfalls.push({kind:"task", name:task.name, minutes:remaining});
+            }
+          }
           else if(repeat>1) shortfalls.push({kind:"repeat", name:task.name, missing:repeat-placedSessions});
           break; // stop trying further sessions once one fails to fit
         }
@@ -1479,6 +1499,20 @@
   var currentSchedule = null; // display schedule (baseline + overrides applied) — what's on screen/PDF
   var currentBaseline = null; // raw algorithm output, no overrides — used for popover "original" info and reset
 
+  // Message for a must-task repeatPerWeek>1 shortfall (schedule()'s {kind:"mustRepeat"}
+  // entries) — states the full required/scheduled/unscheduled counts and total unscheduled
+  // minutes, not just the one session that first failed to fit. Not routed through I18N/tr()
+  // because English needs session/sessions pluralization tr()'s plain substitution can't do.
+  function fmtMustRepeatShortfall(s){
+    if(currentLang==="en"){
+      var reqWord = s.required===1 ? "session" : "sessions";
+      var unWord = s.unscheduled===1 ? "session" : "sessions";
+      return s.name+": "+s.scheduled+" of "+s.required+" "+reqWord+" scheduled. "+
+        s.unscheduled+" "+unWord+" ("+s.minutes+" min) remain unscheduled.";
+    }
+    return s.name+"："+s.required+" 次中已排入 "+s.scheduled+" 次，仍有 "+s.unscheduled+" 次（"+s.minutes+" 分鐘）無法排入。";
+  }
+
   function renderOutput(){
     var weekBase = state.pinnedWeekStart || new Date();
     var weekDates = getWeekDates(weekBase, state.weekOffset);
@@ -1505,6 +1539,7 @@
     } else {
       summaryEl.className = "summary warn";
       var items = result.shortfalls.map(function(s){
+        if(s.kind==="mustRepeat") return "<li>"+esc(fmtMustRepeatShortfall(s))+"</li>";
         return s.kind==="task"
           ? "<li>"+esc(tr("summary.taskShort",{name:s.name,min:s.minutes}))+"</li>"
           : "<li>"+esc(tr("summary.repeatMissing",{name:s.name,n:s.missing}))+"</li>";
