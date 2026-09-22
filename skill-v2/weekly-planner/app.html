@@ -1321,7 +1321,13 @@
       document.getElementById("task-form").hidden = false;
       document.getElementById("task-edit-id").value = t.id;
       document.getElementById("task-name").value = t.name;
-      document.getElementById("task-deadline").value = t.deadline||"";
+      // <input type="datetime-local"> silently rejects a value with no time part (e.g. a
+      // date-only deadline from a JSON import, "2026-10-10") and renders blank instead —
+      // pad it to end-of-day so the field (and the deadline) round-trip through an edit
+      // intact. Matches parseDeadline()'s own date-only interpretation ("T23:59:59").
+      var deadlineVal = t.deadline || "";
+      if(deadlineVal && deadlineVal.indexOf("T")===-1) deadlineVal += "T23:59";
+      document.getElementById("task-deadline").value = deadlineVal;
       document.getElementById("task-minutes").value = t.estimatedMinutes;
       document.getElementById("task-category").value = t.category;
       document.getElementById("task-pref").value = t.timePreference||"any";
