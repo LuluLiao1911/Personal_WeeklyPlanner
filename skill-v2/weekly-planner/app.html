@@ -180,7 +180,7 @@
   .day-body{position:relative;height:600px;background:var(--paper);border:1px solid var(--line);border-top:none;overflow:hidden;}
   .block{
     position:absolute;left:3px;right:3px;border-radius:6px;font-size:10px;line-height:1.15;
-    padding:2px 4px;overflow:hidden;color:#fff;cursor:default;
+    padding:2px 4px;overflow:hidden;color:#fff;cursor:default;user-select:none;
   }
   .block.fixed{background:var(--sage)}
   .block.must{background:var(--rose)}
@@ -1770,6 +1770,13 @@
   function wireBlockInteraction(div, dayKey, block){
     div.addEventListener("pointerdown", function(e){
       if(e.button!==undefined && e.button!==0) return;
+      // Without this, a trackpad click-drag (a "mouse"-type pointer, not "touch" — so the
+      // touch-action:none on .block.movable doesn't apply to it) is ambiguous with native
+      // text-selection (the block's label is a text node) or with scrolling the horizontally
+      // scrollable .calendar container, and the browser can win that race before our own
+      // pointermove listener ever sees meaningful movement. Claiming the gesture up front
+      // makes drag reliable on trackpads, not just mouse/touch.
+      e.preventDefault();
       var startX = e.clientX, startY = e.clientY;
       var dragging = false;
       var ghost = null;
