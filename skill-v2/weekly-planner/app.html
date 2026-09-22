@@ -1943,18 +1943,41 @@
   }
 
   /* ---------------- manual adjustment: overrides doc ---------------- */
+  // While a week's overrides doc is being fetched (real network latency, unlike an
+  // instant-resolving local mock), a drag/undo/reset can complete before that fetch
+  // returns. Without tracking what happened locally in the meantime, the fetch's own
+  // "success" callback would blindly overwrite state.overrides with the pre-drag server
+  // snapshot the instant it finally arrives — the move visibly lands, then silently
+  // reverts moments later. pendingLocalDiff records every local override change made
+  // while a fetch for the current week is still in flight (a value to set, or null to
+  // delete) so the fetch's callback can replay them on top of the server data instead of
+  // clobbering them; pendingLocalReset additionally says "ignore the fetched moves
+  // entirely, start from empty" if a reset happened during the same window.
+  var pendingLocalDiff = null;
+  var pendingLocalReset = false;
+
   function loadOverrides(weekDates){
     var key = weekDocKey(weekDates);
     currentOverridesKey = key;
-    if(!db){ state.overrides = {}; return; }
+    pendingLocalDiff = {};
+    pendingLocalReset = false;
+    if(!db){ state.overrides = {}; pendingLocalDiff = null; return; }
     db.doc("overrides/"+key).get().then(function(snap){
       if(currentOverridesKey !== key) return; // navigated away meanwhile
-      var data = snap.data() || {};
-      state.overrides = data.moves || {};
-      undoStack.length = 0;
+      var base = pendingLocalReset ? {} : ((snap.data()||{}).moves || {});
+      var merged = Object.assign({}, base);
+      if(pendingLocalDiff){
+        Object.keys(pendingLocalDiff).forEach(function(k){
+          if(pendingLocalDiff[k]===null) delete merged[k];
+          else merged[k] = pendingLocalDiff[k];
+        });
+      }
+      state.overrides = merged;
+      pendingLocalDiff = null;
+      pendingLocalReset = false;
       updateManualButtons();
       if(!tabOutput.hidden) renderOutput();
-    }).catch(function(){});
+    }).catch(function(){ pendingLocalDiff = null; pendingLocalReset = false; });
   }
   function saveOverrides(weekKey){
     if(!db) return;
@@ -1972,6 +1995,7 @@
     var prev = Object.prototype.hasOwnProperty.call(state.overrides, blockKey) ? state.overrides[blockKey] : undefined;
     undoStack.push({weekKey:weekKey, blockKey:blockKey, prevValue:prev});
     state.overrides[blockKey] = {day:day, start:start};
+    if(pendingLocalDiff && weekKey===currentOverridesKey) pendingLocalDiff[blockKey] = {day:day, start:start};
     saveOverrides(weekKey);
     updateManualButtons();
     renderOutput();
@@ -1981,6 +2005,9 @@
     var entry = undoStack.pop();
     if(entry.prevValue===undefined) delete state.overrides[entry.blockKey];
     else state.overrides[entry.blockKey] = entry.prevValue;
+    if(pendingLocalDiff && entry.weekKey===currentOverridesKey){
+      pendingLocalDiff[entry.blockKey] = entry.prevValue===undefined ? null : entry.prevValue;
+    }
     saveOverrides(entry.weekKey);
     updateManualButtons();
     renderOutput();
@@ -1988,6 +2015,10 @@
   function resetToGeneratedSchedule(weekKey){
     state.overrides = {};
     undoStack.length = 0;
+    if(pendingLocalDiff && weekKey===currentOverridesKey){
+      pendingLocalDiff = {};
+      pendingLocalReset = true;
+    }
     saveOverrides(weekKey);
     updateManualButtons();
     renderOutput();
