@@ -30,9 +30,12 @@ while the user keeps final control.
 
 ## Results and Limits
 
-Under the same `testcase.json`, both versions import identically and preserve all fixed
-events. In V1, moving one task means editing its input and regenerating the whole schedule; in
-V2 I drag just that block, and the rest of the week stays untouched — directly closing the gap
-that prompted V2. Location still does not affect scheduling in either version.
+During development I defined explicit output-check criteria — no overlapping blocks, Must-task
+deadlines honored to the minute, minimum block sizes respected, and clean dev-tool
+import/export round-trips — and validated every test run against them. This caught a real
+reporting bug: a repeated Must task's shortfall was undercounted (30 min reported vs. the true
+420 min), now fixed and verified. Under the same `testcase.json`, both versions import
+identically and preserve all fixed events, directly closing the gap that prompted V2. Location
+still does not affect scheduling in either version.
 
 **Model used** — Skill development: Claude Sonnet 5. Idea inspiration: ChatGPT 5.
